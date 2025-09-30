@@ -5,6 +5,13 @@
 
 [build.environment]
   NODE_VERSION = "18"
+  # Настройки для Telegram Bot (webhook вместо polling)
+  TELEGRAM_BOT_TOKEN = ""
+  SERVER_URL = ""
+  # Настройки забега
+  RACE_START_TIME = "2024-10-04T10:00:00Z"
+  RACE_END_TIME = "2024-10-05T10:00:00Z"
+  STADIUM_LAP_LENGTH = "0.4"
 
 [[redirects]]
   from = "/api/*"
@@ -18,14 +25,3 @@
 
 [functions]
   directory = "netlify/functions"
-
-# Настройки для Telegram Bot (webhook вместо polling)
-[build.environment]
-  TELEGRAM_BOT_TOKEN = ""
-  SERVER_URL = ""
-
-# Настройки забега
-[build.environment]
-  RACE_START_TIME = "2024-10-04T10:00:00Z"
-  RACE_END_TIME = "2024-10-05T10:00:00Z"
-  STADIUM_LAP_LENGTH = "0.4"
