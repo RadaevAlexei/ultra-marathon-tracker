@@ -1,0 +1,31 @@
+[build]
+  base = "."
+  publish = "public"
+  command = "npm run build"
+
+[build.environment]
+  NODE_VERSION = "18"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[functions]
+  directory = "netlify/functions"
+
+# Настройки для Telegram Bot (webhook вместо polling)
+[build.environment]
+  TELEGRAM_BOT_TOKEN = ""
+  SERVER_URL = ""
+
+# Настройки забега
+[build.environment]
+  RACE_START_TIME = "2024-10-04T10:00:00Z"
+  RACE_END_TIME = "2024-10-05T10:00:00Z"
+  STADIUM_LAP_LENGTH = "0.4"
