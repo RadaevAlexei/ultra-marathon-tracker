@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Суточный забег — Онлайн отслеживание</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Заголовок -->
+        <header class="header">
+            <div class="header-content">
+                <h1>Суточный забег Шри Чинмоя</h1>
+                <div class="race-info">
+                    <span class="race-date">4-5 октября 2024</span>
+                    <span class="race-time">24 часа</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Основная статистика -->
+        <section class="main-stats-section">
+            <div class="main-stats">
+                <div class="stat-block">
+                    <div class="block-title">Километров</div>
+                    <div class="stat-card primary center">
+                        <div class="stat-value" id="totalKilometers">0.00</div>
+                    </div>
+                </div>
+                
+                <div class="stat-block">
+                    <div class="block-title">Кругов</div>
+                    <div class="stat-card center">
+                        <div class="stat-value" id="totalLaps">0</div>
+                    </div>
+                </div>
+                
+                <div class="stat-block">
+                    <div class="block-title">Разряд</div>
+                    <div class="stat-card center">
+                        <div class="stat-value" id="currentRank">Без разряда</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Прогресс бар -->
+        <section class="progress-section">
+            <h3>Прогресс по разрядам</h3>
+            <div class="progress-container">
+                <div class="progress-bar-new">
+                    <div class="progress-fill-new" id="progressFillNew"></div>
+                    <div class="progress-marks">
+                        <div class="mark" style="left: 0%"><span>0</span></div>
+                        <div class="mark" style="left: 9.09%"><span>20</span></div>
+                        <div class="mark" style="left: 18.18%"><span>40</span></div>
+                        <div class="mark" style="left: 27.27%"><span>60</span></div>
+                        <div class="mark" style="left: 36.36%"><span>80</span></div>
+                        <div class="mark" style="left: 45.45%"><span>100</span></div>
+                        <div class="mark" style="left: 54.55%"><span>120</span></div>
+                        <div class="mark" style="left: 63.64%"><span>140</span></div>
+                        <div class="mark rank-mark" style="left: 72.73%"><span>160</span></div>
+                        <div class="mark rank-mark" style="left: 81.82%"><span>180</span></div>
+                        <div class="mark rank-mark" style="left: 90.91%"><span>200</span></div>
+                        <div class="mark rank-mark" style="left: 100%"><span>220</span></div>
+                    </div>
+                </div>
+                <div class="progress-labels">
+                    <div class="rank-text" id="rankText">Следующий разряд: 160 км</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Timer Progress -->
+        <section class="timer-section" id="raceProgressSection" style="display: none;">
+            <h3>Прогресс забега</h3>
+            <div class="timer-container">
+                <div class="timer-circle-mobile">
+                    <svg class="progress-ring" viewBox="0 0 200 200">
+                        <circle class="progress-ring-background" cx="100" cy="100" r="90"></circle>
+                        <circle class="progress-ring-progress" cx="100" cy="100" r="90" id="progressCircle"></circle>
+                    </svg>
+                    <div class="timer-content-mobile">
+                        <div class="timer-display">
+                            <div class="timer-time" id="bigTime">00:00:00</div>
+                            <div class="timer-label" id="bigSub">Прошло времени</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Детальная статистика -->
+        <section class="detailed-stats">
+            <div class="stats-grid">
+                <div class="stat-block">
+                    <div class="block-title">Средний темп</div>
+                    <div class="stat-card center">
+                        <div class="stat-value" id="averagePaceKmh" style="font-size: 24px; margin-bottom: 4px;">0.00 км/ч</div>
+                        <div class="stat-value" id="averagePaceMinKm" style="font-size: 20px; color: var(--muted);">--:-- мин/км</div>
+                    </div>
+                </div>
+                <div class="stat-block">
+                    <div class="block-title">Направление</div>
+                    <div class="stat-card center">
+                        <div class="stat-value" id="directionText" style="font-size: 18px;">--</div>
+                        <div class="stat-value" id="currentLap" style="font-size: 14px; color: var(--muted); margin-top: 4px;">Круг: --</div>
+                    </div>
+                </div>
+                <div class="stat-block">
+                    <div class="block-title">Прогноз</div>
+                    <div class="stat-card center">
+                        <div class="stat-value" id="forecastKm">0.0 км</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Разряды -->
+        <section class="ranks-section">
+            <div class="ranks-grid">
+                <div class="stat-block">
+                    <div class="block-title">3-й разряд</div>
+                    <div class="stat-card center">
+                        <div class="stat-value">160 км</div>
+                    </div>
+                </div>
+                <div class="stat-block">
+                    <div class="block-title">2-й разряд</div>
+                    <div class="stat-card center">
+                        <div class="stat-value">180 км</div>
+                    </div>
+                </div>
+                <div class="stat-block">
+                    <div class="block-title">1-й разряд</div>
+                    <div class="stat-card center">
+                        <div class="stat-value">200 км</div>
+                    </div>
+                </div>
+                <div class="stat-block">
+                    <div class="block-title">КМС</div>
+                    <div class="stat-card center">
+                        <div class="stat-value">220 км</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Информация -->
+        <section class="info-section">
+            <div class="stat-block">
+                <div class="block-title">Информация о забеге</div>
+                <div class="stat-card center">
+                    <div class="stat-value small">Суточный забег проходит на стадионе с кругом 400 метров. Участники бегут 24 часа подряд с 10:00 до 10:00 следующего дня, каждый час меняя направление.</div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
+
+
+

@@ -1,0 +1,443 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+
+:root {
+  --bg-1: #0a0f24;
+  --bg-2: #0f1633;
+  --glass: rgba(255, 255, 255, 0.08);
+  --glass-strong: rgba(255, 255, 255, 0.14);
+  --stroke: rgba(255, 255, 255, 0.18);
+  --text: #ecf3ff;
+  --muted: #9fb1c8;
+  --accent: #4fd1c5; /* бирюзовый спорт */
+  --accent-2: #5aa0ff; /* небо‑синий */
+  --danger: #ff6b6b;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: var(--text);
+  min-height: 100vh;
+  background: radial-gradient(1200px 600px at 10% -20%, #1a2c68 0%, transparent 55%),
+              radial-gradient(1000px 500px at 110% 0%, #124e78 0%, transparent 60%),
+              linear-gradient(180deg, var(--bg-1), var(--bg-2));
+}
+
+.app-container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 20px 16px 56px;
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: linear-gradient(180deg, rgba(10, 15, 36, 0.7), rgba(10, 15, 36, 0.3));
+  backdrop-filter: saturate(180%) blur(12px);
+  border: 1px solid var(--stroke);
+  border-radius: 18px;
+  padding: 18px 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+.header h1 { margin: 0 0 6px; font-size: 28px; letter-spacing: 0.3px; text-align: center; }
+.race-info { color: var(--muted); display: flex; gap: 10px; font-size: 13px; justify-content: center; }
+
+.main-stats { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 12px; }
+.stat-block .block-title { font-weight: 800; font-size: 13px; color: var(--muted); margin: 0 0 20px 6px; letter-spacing: .4px; text-transform: uppercase; }
+.stat-card.center { display: flex; align-items: center; justify-content: center; text-align: center; }
+/* Выравниваем высоту карточек в первом блоке */
+.main-stats .stat-card { min-height: 120px; }
+/* Уменьшаем размер текста разряда ~в 1.5 раза */
+#currentRank { font-size: 28px; }
+.stat-card {
+  background: linear-gradient(180deg, var(--glass), rgba(255,255,255,0.04));
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--stroke);
+  border-radius: 18px;
+  padding: 24px 18px;
+  position: relative;
+  overflow: hidden;
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.stat-card::after {
+  content: '';
+  position: absolute;
+  inset: -30% -10% auto auto;
+  width: 120px; height: 120px;
+  background: radial-gradient(closest-side, rgba(95,160,255,0.25), transparent);
+  transform: rotate(25deg);
+}
+.stat-card.primary {
+  border-color: rgba(79, 209, 197, 0.5);
+  box-shadow: 0 12px 28px rgba(79, 209, 197, 0.12);
+}
+.stat-value { font-size: 42px; font-weight: 800; letter-spacing: -0.5px; }
+.stat-value.small { font-size: 16px; }
+.stat-value.start-value { font-size: 48px; font-weight: 800; letter-spacing: 1px; }
+
+/* Специальные стили для блока "До старта" */
+.start-block {
+  margin: 20px 0;
+}
+
+.start-card {
+  background: linear-gradient(180deg, rgba(255, 107, 107, 0.2), rgba(255, 107, 107, 0.1));
+  border: 2px solid rgba(255, 107, 107, 0.6);
+  box-shadow: 0 12px 28px rgba(255, 107, 107, 0.3);
+  min-height: 120px;
+  padding: 24px 18px;
+}
+
+.start-card::after {
+  background: radial-gradient(closest-side, rgba(255, 107, 107, 0.3), transparent);
+}
+
+/* Стили для блока LIVE */
+.live-block {
+  margin: 20px 0;
+}
+
+.live-card {
+  background: linear-gradient(180deg, rgba(127, 213, 142, 0.2), rgba(127, 213, 142, 0.1));
+  border: 2px solid rgba(127, 213, 142, 0.6);
+  box-shadow: 0 12px 28px rgba(127, 213, 142, 0.3);
+  min-height: 120px;
+  padding: 24px 18px;
+}
+
+.live-card::after {
+  background: radial-gradient(closest-side, rgba(127, 213, 142, 0.3), transparent);
+}
+.stat-label { color: var(--muted); margin-top: 6px; font-size: 13px; }
+.stat-icon { display: none; }
+
+.section {
+  background: linear-gradient(180deg, var(--glass), rgba(255,255,255,0.04));
+  border: 1px solid var(--stroke);
+  border-radius: 18px;
+  padding: 20px;
+  margin: 16px 0;
+}
+/* Секции наследуют стили .section */
+.main-stats-section, .progress-section, .stadium-section, .detailed-stats, .ranks-section, .info-section, .timer-section {
+  background: linear-gradient(180deg, var(--glass), rgba(255,255,255,0.04));
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--stroke);
+  border-radius: 18px;
+  padding: 20px;
+  margin: 16px 0;
+}
+
+.section h3 {
+  margin: 0 0 20px 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  text-align: center;
+}
+
+/* Новый прогресс-бар по разрядам */
+.progress-container {
+  margin-top: 16px;
+}
+
+.progress-bar-new {
+  position: relative;
+  width: 100%;
+  height: 24px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid var(--stroke);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.progress-fill-new {
+  height: 100%;
+  width: 0%;
+  border-radius: 10px;
+  transition: width 0.8s cubic-bezier(.2,.8,.2,1);
+  background: linear-gradient(90deg, #00ff88, #ff6b6b);
+  box-shadow: 0 6px 18px rgba(0,255,136,0.35);
+}
+
+.progress-marks {
+  position: absolute;
+  top: 32px;
+  left: 0;
+  right: 0;
+  height: 24px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.mark {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+}
+
+.mark::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 8px;
+  background: rgba(255,255,255,0.6);
+}
+
+.mark.rank-mark::before {
+  height: 12px;
+  background: rgba(255,255,255,0.9);
+  width: 3px;
+}
+
+.mark span {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.mark.rank-mark span {
+  color: var(--text);
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.progress-labels {
+  margin-top: 32px;
+  text-align: center;
+}
+
+
+.rank-text {
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.stadium-container { display: flex; justify-content: center; }
+.stadium-track { display:none; }
+.runner { display:none; }
+
+/* Timer Progress */
+.timer-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px 0;
+}
+
+.timer-circle-mobile {
+  position: relative;
+  width: 100%;
+  max-width: 300px;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.progress-ring {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  filter: drop-shadow(0 0 20px rgba(0, 255, 136, 0.4));
+}
+
+.progress-ring-background {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-width: 6;
+}
+
+.progress-ring-progress {
+  fill: none;
+  stroke: #00ff88;
+  stroke-width: 6;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.3s ease;
+}
+
+.timer-content-mobile {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 80%;
+  height: 80%;
+}
+
+.timer-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.timer-time {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--text);
+  margin-bottom: 6px;
+  line-height: 1;
+}
+
+.timer-label {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 1;
+}
+
+
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+.ranks-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+
+.timer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+
+/* Состояния блока «До старта» */
+.timer-item.state-pre {
+  background: rgba(255, 107, 107, 0.16); /* чуть ярче пастельный красный */
+  border-color: rgba(255, 107, 107, 0.55);
+  box-shadow: 0 10px 28px rgba(255, 107, 107, 0.18);
+}
+.timer-item.state-live {
+  background: rgba(127, 213, 142, 0.18); /* чуть ярче пастельный зелёный */
+  border-color: rgba(127, 213, 142, 0.6);
+  box-shadow: 0 10px 28px rgba(127, 213, 142, 0.2);
+}
+
+.badge-live {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #0a1b10;
+  background: linear-gradient(90deg, #7fd58e, #4fd1c5);
+  box-shadow: 0 6px 16px rgba(127, 213, 142, 0.35);
+}
+
+@media (max-width: 768px) {
+  .app-container {
+    padding: 16px 12px 56px;
+  }
+  
+  .section {
+    margin: 12px 0;
+    padding: 16px;
+  }
+  
+  .main-stats {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .ranks-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .timer-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .timer-grid #untilStartItem {
+    grid-column: auto;
+  }
+  
+  .stat-value {
+    font-size: 36px;
+  }
+  
+  
+  .timer-container {
+    padding: 10px 0;
+  }
+  
+  .timer-circle-mobile {
+    max-width: 280px;
+  }
+  
+  .timer-time {
+    font-size: 24px;
+  }
+  
+  .timer-label {
+    font-size: 10px;
+  }
+  
+  .timer-content-mobile {
+    width: 85%;
+    height: 85%;
+  }
+  
+  .stat-value.start-value {
+    font-size: 36px;
+  }
+  
+  .start-card {
+    min-height: 100px;
+    padding: 20px;
+  }
+  
+  .progress-bar-new {
+    height: 20px;
+  }
+  
+  .progress-marks {
+    top: 28px;
+    height: 20px;
+  }
+  
+  .mark span {
+    font-size: 10px;
+  }
+  
+  .mark.rank-mark span {
+    font-size: 11px;
+  }
+  
+  .progress-labels {
+    margin-top: 28px;
+  }
+  
+  
+  .rank-text {
+    font-size: 12px;
+  }
+  
+}
+
+
+
