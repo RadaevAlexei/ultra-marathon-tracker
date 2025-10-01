@@ -143,19 +143,27 @@ exports.handler = async (event, context) => {
             
             if (userState === 'adding_laps') {
               // Обновляем круги
+              console.log(`🔄 Отправляем круги: ${number}`);
+              const requestBody = { lapsNumber: number };
+              console.log(`📤 Request body:`, requestBody);
+              
               response = await fetch(`${serverUrl}/.netlify/functions/data`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ lapsNumber: number })
+                body: JSON.stringify(requestBody)
               });
               // Не используем локальное сообщение, только из API
               successMessage = null;
             } else {
               // По умолчанию обновляем километры
+              console.log(`🔄 Отправляем километры: ${number}`);
+              const requestBody = { kmNumber: number };
+              console.log(`📤 Request body:`, requestBody);
+              
               response = await fetch(`${serverUrl}/.netlify/functions/data`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ kmNumber: number })
+                body: JSON.stringify(requestBody)
               });
               // Не используем локальное сообщение, только из API
               successMessage = null;
