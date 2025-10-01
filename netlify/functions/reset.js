@@ -1,4 +1,4 @@
-const { saveStats } = require('./storage');
+const { saveStats } = require('./storage_fs');
 
 exports.handler = async (event, context) => {
   // Настройка CORS

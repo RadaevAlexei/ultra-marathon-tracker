@@ -1,4 +1,4 @@
-const { getStats, saveStats } = require('./storage');
+const { getStats, saveStats } = require('./storage_fs');
 
 const LAP_LENGTH_KM = 0.4; // 400 метров
 
