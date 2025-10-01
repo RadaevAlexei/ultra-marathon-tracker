@@ -158,8 +158,8 @@ if (bot) {
           }
           
           // Вычисляем прошедшее время
-          const raceStart = new Date('2025-10-01T10:00:00+03:00');
-          const raceEnd = new Date('2025-10-02T10:00:00+03:00');
+          const raceStart = new Date('2024-10-04T10:00:00+03:00');
+          const raceEnd = new Date('2024-10-05T10:00:00+03:00');
           const now = new Date();
           const elapsedMs = Math.max(0, now - raceStart);
           const elapsedHours = Math.floor(elapsedMs / 3600000);
