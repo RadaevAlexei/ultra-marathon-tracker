@@ -29,8 +29,6 @@ async function fetchRaceTime() {
 const LAP_LENGTH_KM = 0.4; // 400 м
 
 const totalKmEl = document.getElementById('totalKilometers');
-const averagePaceKmhEl = document.getElementById('averagePaceKmh');
-const averagePaceMinKmEl = document.getElementById('averagePaceMinKm');
 const directionTextEl = document.getElementById('directionText');
 const currentLapEl = document.getElementById('currentLap');
 const progressFillNewEl = document.getElementById('progressFillNew');
@@ -209,18 +207,6 @@ async function refreshUI() {
     }
 
     const forecast = computeForecastKm(totalKm, elapsedHours);
-    const avgPace = elapsedHours > 0 ? (totalKm / elapsedHours) : 0;
-    const avgPaceMinKm = avgPace > 0 ? (60 / avgPace) : 0;
-    
-    averagePaceKmhEl.textContent = `${avgPace.toFixed(2)} км/ч`;
-    
-    if (avgPaceMinKm > 0) {
-      const minutes = Math.floor(avgPaceMinKm);
-      const seconds = Math.round((avgPaceMinKm - minutes) * 60);
-      averagePaceMinKmEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')} мин/км`;
-    } else {
-      averagePaceMinKmEl.textContent = '--:-- мин/км';
-    }
 
     // Обновление направления
     const { direction, directionAlt } = computeDirectionAndLap(totalKm);
