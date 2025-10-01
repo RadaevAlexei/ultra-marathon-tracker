@@ -52,9 +52,9 @@ body {
 /* Уменьшаем размер текста разряда ~в 1.5 раза */
 #currentRank { font-size: 28px; }
 .stat-card {
-  background: linear-gradient(180deg, var(--glass), rgba(255,255,255,0.04));
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--stroke);
+  background: linear-gradient(180deg, rgba(255,255,255,0.15), rgba(255,255,255,0.08));
+  backdrop-filter: none;
+  border: 1px solid rgba(255,255,255,0.3);
   border-radius: 18px;
   padding: 24px 18px;
   position: relative;
@@ -107,9 +107,9 @@ body {
 }
 
 .live-card {
-  background: linear-gradient(180deg, rgba(127, 213, 142, 0.2), rgba(127, 213, 142, 0.1));
-  border: 2px solid rgba(127, 213, 142, 0.6);
-  box-shadow: 0 12px 28px rgba(127, 213, 142, 0.3);
+  background: linear-gradient(180deg, rgba(127, 213, 142, 0.4), rgba(127, 213, 142, 0.3));
+  border: 2px solid rgba(127, 213, 142, 0.8);
+  box-shadow: 0 12px 28px rgba(127, 213, 142, 0.5);
   min-height: 120px;
   padding: 24px 18px;
 }
@@ -121,17 +121,17 @@ body {
 .stat-icon { display: none; }
 
 .section {
-  background: linear-gradient(180deg, var(--glass), rgba(255,255,255,0.04));
-  border: 1px solid var(--stroke);
+  background: linear-gradient(180deg, rgba(255,255,255,0.15), rgba(255,255,255,0.08));
+  border: 1px solid rgba(255,255,255,0.3);
   border-radius: 18px;
   padding: 20px;
   margin: 16px 0;
 }
 /* Секции наследуют стили .section */
 .main-stats-section, .progress-section, .stadium-section, .detailed-stats, .ranks-section, .info-section, .timer-section {
-  background: linear-gradient(180deg, var(--glass), rgba(255,255,255,0.04));
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--stroke);
+  background: linear-gradient(180deg, rgba(255,255,255,0.15), rgba(255,255,255,0.08));
+  backdrop-filter: none;
+  border: 1px solid rgba(255,255,255,0.3);
   border-radius: 18px;
   padding: 20px;
   margin: 16px 0;
@@ -332,9 +332,9 @@ body {
   box-shadow: 0 10px 28px rgba(255, 107, 107, 0.18);
 }
 .timer-item.state-live {
-  background: rgba(127, 213, 142, 0.18); /* чуть ярче пастельный зелёный */
-  border-color: rgba(127, 213, 142, 0.6);
-  box-shadow: 0 10px 28px rgba(127, 213, 142, 0.2);
+  background: rgba(127, 213, 142, 0.4); /* более яркий зелёный */
+  border-color: rgba(127, 213, 142, 0.8);
+  box-shadow: 0 10px 28px rgba(127, 213, 142, 0.5);
 }
 
 .badge-live {
@@ -407,12 +407,26 @@ body {
   }
   
   .stat-value.start-value {
-    font-size: 36px;
+    font-size: 20px;
+    line-height: 1.1;
+    white-space: nowrap;
   }
   
   .start-card {
     min-height: 100px;
-    padding: 20px;
+    padding: 20px 16px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .start-card .stat-value {
+    font-size: 20px !important;
+    line-height: 1.1 !important;
+    white-space: nowrap !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   
   .progress-bar-new {
@@ -441,6 +455,21 @@ body {
     font-size: 12px;
   }
   
+}
+
+/* Дополнительные стили для очень маленьких экранов */
+@media (max-width: 480px) {
+  .start-card .stat-value,
+  .stat-value.start-value {
+    font-size: 18px !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .start-card .stat-value,
+  .stat-value.start-value {
+    font-size: 16px !important;
+  }
 }
 
 /* МАКСИМАЛЬНО СПЕЦИФИЧНОЕ ПРАВИЛО ДЛЯ БЛОКА ТАЙМЕРА */
