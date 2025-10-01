@@ -97,7 +97,7 @@ function computeRank(totalKm) {
   if (totalKm >= 200) return { name: '1-й', nextAt: 220, kmToNext: 220 - totalKm };
   if (totalKm >= 180) return { name: '2-й', nextAt: 200, kmToNext: 200 - totalKm };
   if (totalKm >= 160) return { name: '3-й', nextAt: 180, kmToNext: 180 - totalKm };
-  return { name: 'Без разряда', nextAt: 160, kmToNext: 160 - totalKm };
+  return { name: '-', nextAt: 160, kmToNext: 160 - totalKm };
 }
 
 function updateProgressToNextRank(currentKm) {
