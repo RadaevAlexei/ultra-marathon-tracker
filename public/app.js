@@ -104,21 +104,6 @@ function updateProgressToNextRank(currentKm) {
   }
 }
 
-function updateCircularTimer(elapsedMs) {
-  const totalMs = 24 * 3600 * 1000;
-  const clamped = Math.max(0, Math.min(totalMs, elapsedMs));
-  const pct = clamped / totalMs; // 0..1
-  
-  const progressCircle = document.getElementById('progressCircle');
-  if (!progressCircle) return;
-  
-  const radius = 90; // Новый радиус для viewBox="0 0 200 200"
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (pct * circumference);
-  
-  progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
-  progressCircle.style.strokeDashoffset = offset;
-}
 
 async function fetchStats() {
   const res = await fetch('/.netlify/functions/data');
@@ -188,34 +173,20 @@ async function refreshUI() {
     }
     
     updateProgressToNextRank(totalKm);
-    updateCircularTimer(elapsedMs);
     updateRankBlocks(totalKm);
     
-    // Обновляем текст в блоке прогресса забега
-    const bigTimeEl = document.getElementById('bigTime');
-    const bigSubEl = document.getElementById('bigSub');
-    if (bigTimeEl && bigSubEl) {
-      // Показываем процент завершения забега
-      const raceDuration = RACE_END - RACE_START;
-      const progressPercent = Math.min(100, Math.max(0, (elapsedMs / raceDuration) * 100));
-      bigTimeEl.textContent = `${Math.round(progressPercent)}%`;
-      bigSubEl.textContent = 'Прогресс забега';
-    }
 
     // Показ/скрытие блоков в зависимости от времени
     const untilStartItem = document.getElementById('untilStartItem');
     const elapsedItem = document.getElementById('elapsedItem');
-    const raceProgressSection = document.getElementById('raceProgressSection');
     
-    if (untilStartItem && elapsedItem && raceProgressSection) {
+    if (untilStartItem && elapsedItem) {
       if (now >= RACE_START) {
         untilStartItem.style.display = 'none';
         elapsedItem.style.display = 'block';
-        raceProgressSection.style.display = 'block';
       } else {
         untilStartItem.style.display = 'block';
         elapsedItem.style.display = 'none';
-        raceProgressSection.style.display = 'none';
       }
     }
   } catch (e) {
@@ -228,7 +199,6 @@ function tickTimer() {
   const now = new Date();
   const elapsedMs = Math.min(RACE_END - RACE_START, Math.max(0, now - RACE_START));
   document.getElementById('elapsed').textContent = formatHHMMSS(elapsedMs);
-  updateCircularTimer(elapsedMs);
   // Показ бейджа LIVE после старта
   const liveBadge = document.getElementById('liveBadge');
   if (liveBadge) {
@@ -238,17 +208,14 @@ function tickTimer() {
   // Показ/скрытие блоков в зависимости от времени
   const untilStartItem = document.getElementById('untilStartItem');
   const elapsedItem = document.getElementById('elapsedItem');
-  const raceProgressSection = document.getElementById('raceProgressSection');
   
-  if (untilStartItem && elapsedItem && raceProgressSection) {
+  if (untilStartItem && elapsedItem) {
     if (now >= RACE_START) {
       untilStartItem.style.display = 'none';
       elapsedItem.style.display = 'block';
-      raceProgressSection.style.display = 'block';
     } else {
       untilStartItem.style.display = 'block';
       elapsedItem.style.display = 'none';
-      raceProgressSection.style.display = 'none';
     }
   }
 }
