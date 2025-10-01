@@ -1,14 +1,12 @@
-const fs = require('fs');
-const path = require('path');
+const { getStore } = require('@netlify/blobs');
 
-// Используем тот же файл данных, что и stats.js
-const DATA_FILE = path.join(__dirname, 'run_stats.json');
 const LAP_LENGTH_KM = 0.4; // 400 метров
 
-function getStats() {
+async function getStats() {
   try {
-    if (fs.existsSync(DATA_FILE)) {
-      const data = fs.readFileSync(DATA_FILE, 'utf8');
+    const store = getStore('run-stats');
+    const data = await store.get('current');
+    if (data) {
       return JSON.parse(data);
     }
   } catch (error) {
@@ -23,9 +21,10 @@ function getStats() {
   };
 }
 
-function saveStats(stats) {
+async function saveStats(stats) {
   try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(stats, null, 2));
+    const store = getStore('run-stats');
+    await store.set('current', JSON.stringify(stats));
     return true;
   } catch (error) {
     console.error('Ошибка сохранения данных:', error);
@@ -75,7 +74,7 @@ exports.handler = async (event, context) => {
     const lapsNumber = Number(laps);
     const kmToAdd = lapsNumber * LAP_LENGTH_KM;
     
-    const currentStats = getStats();
+    const currentStats = await getStats();
     const newTotalKm = currentStats.total_km + kmToAdd;
     const totalLaps = Math.round(newTotalKm / LAP_LENGTH_KM);
     
@@ -85,7 +84,7 @@ exports.handler = async (event, context) => {
       updated_at: new Date().toISOString(),
     };
 
-    if (saveStats(newStats)) {
+    if (await saveStats(newStats)) {
       return {
         statusCode: 200,
         headers: {

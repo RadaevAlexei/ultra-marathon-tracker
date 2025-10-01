@@ -1,14 +1,10 @@
-const fs = require('fs');
-const path = require('path');
+const { getStore } = require('@netlify/blobs');
 
-// Простое хранение данных в JSON файле (для демонстрации)
-// В продакшене лучше использовать внешнюю БД (PlanetScale, Supabase, etc.)
-const DATA_FILE = path.join(__dirname, 'run_stats.json');
-
-function getStats() {
+async function getStats() {
   try {
-    if (fs.existsSync(DATA_FILE)) {
-      const data = fs.readFileSync(DATA_FILE, 'utf8');
+    const store = getStore('run-stats');
+    const data = await store.get('current');
+    if (data) {
       return JSON.parse(data);
     }
   } catch (error) {
@@ -23,9 +19,10 @@ function getStats() {
   };
 }
 
-function saveStats(stats) {
+async function saveStats(stats) {
   try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(stats, null, 2));
+    const store = getStore('run-stats');
+    await store.set('current', JSON.stringify(stats));
     return true;
   } catch (error) {
     console.error('Ошибка сохранения данных:', error);
@@ -53,7 +50,7 @@ exports.handler = async (event, context) => {
   try {
     if (event.httpMethod === 'GET') {
       // Получение статистики
-      const stats = getStats();
+      const stats = await getStats();
       return {
         statusCode: 200,
         headers: {
@@ -83,14 +80,14 @@ exports.handler = async (event, context) => {
       }
 
       const kmNumber = Number(km);
-      const currentStats = getStats();
+      const currentStats = await getStats();
       const newStats = {
         ...currentStats,
         total_km: currentStats.total_km + kmNumber,
         updated_at: new Date().toISOString(),
       };
 
-      if (saveStats(newStats)) {
+      if (await saveStats(newStats)) {
         return {
           statusCode: 200,
           headers: {

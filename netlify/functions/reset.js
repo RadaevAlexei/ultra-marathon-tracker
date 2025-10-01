@@ -1,12 +1,9 @@
-const fs = require('fs');
-const path = require('path');
+const { getStore } = require('@netlify/blobs');
 
-// Используем тот же файл данных, что и stats.js
-const DATA_FILE = path.join(__dirname, 'run_stats.json');
-
-function saveStats(stats) {
+async function saveStats(stats) {
   try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(stats, null, 2));
+    const store = getStore('run-stats');
+    await store.set('current', JSON.stringify(stats));
     return true;
   } catch (error) {
     console.error('Ошибка сохранения данных:', error);
@@ -47,7 +44,7 @@ exports.handler = async (event, context) => {
       updated_at: new Date().toISOString()
     };
 
-    if (saveStats(resetStats)) {
+    if (await saveStats(resetStats)) {
       return {
         statusCode: 200,
         headers: {
