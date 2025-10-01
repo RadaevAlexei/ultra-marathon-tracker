@@ -308,7 +308,7 @@ exports.handler = async (event, context) => {
             
             // Красивое сообщение
             let message = `📊 <b>СТАТИСТИКА ЗАБЕГА</b>\n`;
-            message += `━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+            message += `━━━━━━━━━━━━━━━━\n\n`;
             
             message += `🏃‍♂️ <b>Километры:</b>\n`;
             message += `   ${totalKm.toFixed(2)} км\n\n`;
@@ -338,7 +338,7 @@ exports.handler = async (event, context) => {
             message += `📈 <b>Прогресс до КМС:</b>\n`;
             message += `   ${progressBar} ${progress.toFixed(0)}%\n\n`;
             
-            message += `━━━━━━━━━━━━━━━━━━━━━━\n`;
+            message += `━━━━━━━━━━━━━━━━\n`;
             message += `🕐 Обновлено: ${dateStr}`;
             
             const keyboard = isAdmin(userId) ? adminKeyboard : userKeyboard;
