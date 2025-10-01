@@ -139,8 +139,14 @@ if (bot) {
 
       case 'admin_stats':
         try {
-          const resp = await fetch(`${SERVER_URL}/api/stats`);
-          const stats = await resp.json();
+          // Получаем статистику и время забега
+          const [statsResp, raceTimeResp] = await Promise.all([
+            fetch(`${SERVER_URL}/api/stats`),
+            fetch(`${SERVER_URL}/api/set_race_time`)
+          ]);
+          
+          const stats = await statsResp.json();
+          const raceTime = await raceTimeResp.json();
           
           const totalKm = Number(stats.total_km || 0);
           const totalLaps = Math.round(totalKm / 0.4);
@@ -230,9 +236,23 @@ if (bot) {
           const filledBars = Math.round((progress / 100) * barLength);
           const progressBar = '▓'.repeat(filledBars) + '░'.repeat(barLength - filledBars);
           
+          // Форматируем дату старта забега
+          const raceStartDate = new Date(raceTime.race_start);
+          const raceStartStr = raceStartDate.toLocaleDateString('ru-RU', {
+            timeZone: 'Europe/Volgograd',
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+          
           // Красивое сообщение (используем HTML разметку)
           let message = `📊 <b>СТАТИСТИКА ЗАБЕГА</b>\n`;
           message += `━━━━━\n\n`;
+          
+          message += `🏁 <b>Дата старта забега:</b>\n`;
+          message += `   ${raceStartStr}\n\n`;
           
           message += `🏃‍♂️ <b>Километры:</b>\n`;
           message += `   ${totalKm.toFixed(2)} км\n\n`;

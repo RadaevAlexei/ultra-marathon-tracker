@@ -370,9 +370,15 @@ exports.handler = async (event, context) => {
           break;
 
         case 'admin_stats':
-          try {
-            const response = await fetch(`${serverUrl}/.netlify/functions/data`);
-            const stats = await response.json();
+        try {
+          // Получаем статистику и время забега
+          const [statsResp, raceTimeResp] = await Promise.all([
+            fetch(`${serverUrl}/.netlify/functions/data`),
+            fetch(`${serverUrl}/.netlify/functions/set_race_time`)
+          ]);
+          
+          const stats = await statsResp.json();
+          const raceTime = await raceTimeResp.json();
             
             const totalKm = Number(stats.total_km || 0);
             const totalLaps = Math.round(totalKm / 0.4);
@@ -462,9 +468,23 @@ exports.handler = async (event, context) => {
             const filledBars = Math.round((progress / 100) * barLength);
             const progressBar = '▓'.repeat(filledBars) + '░'.repeat(barLength - filledBars);
             
+            // Форматируем дату старта забега
+            const raceStartDate = new Date(raceTime.race_start);
+            const raceStartStr = raceStartDate.toLocaleDateString('ru-RU', {
+              timeZone: 'Europe/Volgograd',
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            });
+            
             // Красивое сообщение
             let message = `📊 <b>СТАТИСТИКА ЗАБЕГА</b>\n`;
             message += `━━━━━━━━━━━━━━━━\n\n`;
+            
+            message += `🏁 <b>Дата старта забега:</b>\n`;
+            message += `   ${raceStartStr}\n\n`;
             
             message += `🏃‍♂️ <b>Километры:</b>\n`;
             message += `   ${totalKm.toFixed(2)} км\n\n`;
