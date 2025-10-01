@@ -134,7 +134,7 @@ exports.handler = async (event, context) => {
         if (number > 0) {
           try {
             // Пытаемся добавить километры
-            const response = await fetch(`${serverUrl}/.netlify/functions/update_km`, {
+            const response = await fetch(`${serverUrl}/.netlify/functions/data`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ kmNumber: number })
@@ -183,10 +183,12 @@ exports.handler = async (event, context) => {
 
         case 'admin_reset':
           if (isAdmin(userId)) {
-            try {
-              const response = await fetch(`${serverUrl}/.netlify/functions/reset`, {
-                method: 'POST'
-              });
+          try {
+            const response = await fetch(`${serverUrl}/.netlify/functions/data`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ reset: true })
+            });
               
               if (response.ok) {
                 await sendMessage(chatId, '✅ Данные сброшены!', adminKeyboard);
@@ -205,7 +207,7 @@ exports.handler = async (event, context) => {
 
         case 'admin_stats':
           try {
-            const response = await fetch(`${serverUrl}/.netlify/functions/stats`);
+            const response = await fetch(`${serverUrl}/.netlify/functions/data`);
             const stats = await response.json();
             
             const totalKm = Number(stats.total_km || 0);

@@ -121,7 +121,7 @@ function updateCircularTimer(elapsedMs) {
 }
 
 async function fetchStats() {
-  const res = await fetch('/api/stats');
+  const res = await fetch('/.netlify/functions/data');
   if (!res.ok) throw new Error('Failed to fetch stats');
   return res.json();
 }
