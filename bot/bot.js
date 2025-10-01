@@ -152,7 +152,7 @@ if (bot) {
           const totalLaps = Math.round(totalKm / 0.4);
           
           // Вычисляем разряд
-          let rank = 'Без разряда';
+          let rank = '-';
           let rankEmoji = '⚪️';
           let nextRank = 160;
           let kmToNext = 160 - totalKm;
