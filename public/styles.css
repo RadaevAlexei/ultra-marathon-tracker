@@ -48,7 +48,10 @@ body {
 .stat-block .block-title { font-weight: 800; font-size: 13px; color: var(--muted); margin: 0 0 20px 6px; letter-spacing: .4px; text-transform: uppercase; }
 .stat-card.center { display: flex; align-items: center; justify-content: center; text-align: center; }
 /* Выравниваем высоту карточек в первом блоке */
-.main-stats .stat-card { min-height: 120px; }
+.main-stats .stat-card { 
+  min-height: 60px; 
+  height: 60px;
+}
 /* Уменьшаем размер текста разряда ~в 1.5 раза */
 #currentRank { font-size: 28px; }
 .stat-card {
@@ -56,10 +59,10 @@ body {
   backdrop-filter: none;
   border: 1px solid rgba(255,255,255,0.3);
   border-radius: 18px;
-  padding: 24px 18px;
+  padding: 12px 18px;
   position: relative;
   overflow: hidden;
-  min-height: 120px;
+  min-height: 60px;
   display: flex;
   align-items: center;
   justify-content: center;
