@@ -161,7 +161,9 @@ exports.handler = async (event, context) => {
             
             if (response.ok) {
               const result = await response.json();
-              await sendMessage(chatId, successMessage, adminKeyboard);
+              // Используем сообщение из ответа API, если оно есть
+              const finalMessage = result.message || successMessage;
+              await sendMessage(chatId, finalMessage, adminKeyboard);
               
               // Сбрасываем состояние пользователя
               delete userStates[userId];

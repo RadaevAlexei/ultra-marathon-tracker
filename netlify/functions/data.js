@@ -84,29 +84,11 @@ exports.handler = async (event, context) => {
       // Установить километры
       if (body.kmNumber !== undefined) {
         const currentStats = await getStats();
+        const km = Number(body.kmNumber);
+        const laps = Math.round(km / 0.4); // Пересчитываем круги из км
         const newStats = {
           ...currentStats,
-          total_km: Number(body.kmNumber),
-          updated_at: new Date().toISOString()
-        };
-        
-        if (await saveStats(newStats)) {
-          return {
-            statusCode: 200,
-            headers: { ...headers, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ success: true, ...newStats })
-          };
-        }
-      }
-      
-      // Установить круги (конвертировать в километры)
-      if (body.lapsNumber !== undefined) {
-        const currentStats = await getStats();
-        const laps = Number(body.lapsNumber);
-        const km = laps * 0.4; // 400 метров за круг
-        const newStats = {
-          ...currentStats,
-          total_km: Math.round(km * 100) / 100, // Округляем до 2 знаков
+          total_km: km,
           updated_at: new Date().toISOString()
         };
         
@@ -117,7 +99,32 @@ exports.handler = async (event, context) => {
             body: JSON.stringify({ 
               success: true, 
               ...newStats,
-              laps: laps,
+              total_laps: laps,
+              message: `Установлено ${km} км (${laps} кругов)`
+            })
+          };
+        }
+      }
+      
+      // Установить круги (конвертировать в километры)
+      if (body.lapsNumber !== undefined) {
+        const currentStats = await getStats();
+        const laps = Number(body.lapsNumber);
+        const km = Math.round((laps * 0.4) * 100) / 100; // 400 метров за круг, округляем до 2 знаков
+        const newStats = {
+          ...currentStats,
+          total_km: km,
+          updated_at: new Date().toISOString()
+        };
+        
+        if (await saveStats(newStats)) {
+          return {
+            statusCode: 200,
+            headers: { ...headers, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              success: true, 
+              ...newStats,
+              total_laps: laps,
               message: `Установлено ${laps} кругов (${km} км)`
             })
           };
