@@ -80,12 +80,12 @@ function computeDirectionAndLap(totalKm) {
   }
 }
 
-function computeRank(forecastKm) {
-  if (forecastKm >= 220) return { name: 'КМС', nextAt: null };
-  if (forecastKm >= 200) return { name: '1-й разряд', nextAt: 220 };
-  if (forecastKm >= 180) return { name: '2-й разряд', nextAt: 200 };
-  if (forecastKm >= 160) return { name: '3-й разряд', nextAt: 180 };
-  return { name: 'Без разряда', nextAt: 160 };
+function computeRank(totalKm) {
+  if (totalKm >= 220) return { name: 'КМС', nextAt: null, kmToNext: 0 };
+  if (totalKm >= 200) return { name: '1-й', nextAt: 220, kmToNext: 220 - totalKm };
+  if (totalKm >= 180) return { name: '2-й', nextAt: 200, kmToNext: 200 - totalKm };
+  if (totalKm >= 160) return { name: '3-й', nextAt: 180, kmToNext: 180 - totalKm };
+  return { name: 'Без разряда', nextAt: 160, kmToNext: 160 - totalKm };
 }
 
 function updateProgressToNextRank(currentKm) {
@@ -98,7 +98,7 @@ function updateProgressToNextRank(currentKm) {
   // Определяем следующий разряд
   const rankInfo = computeRank(currentKm);
   if (rankInfo.nextAt) {
-    rankTextEl.textContent = `Следующий разряд: ${rankInfo.nextAt} км`;
+    rankTextEl.textContent = `До следующего разряда: ${rankInfo.kmToNext.toFixed(1)} км`;
   } else {
     rankTextEl.textContent = 'Достигнут максимальный разряд (КМС)';
   }
@@ -180,6 +180,13 @@ async function refreshUI() {
     directionTextEl.textContent = direction;
     currentLapEl.textContent = directionAlt;
 
+    // Обновляем текущий разряд
+    const currentRankEl = document.getElementById('currentRank');
+    const rankInfo = computeRank(totalKm);
+    if (currentRankEl) {
+      currentRankEl.textContent = rankInfo.name;
+    }
+    
     updateProgressToNextRank(totalKm);
     updateCircularTimer(elapsedMs);
     updateRankBlocks(totalKm);
@@ -273,7 +280,7 @@ function updateRankBlocks(totalKm) {
 
 console.log('🎯 Инициализация приложения...');
 refreshUI();
-setInterval(refreshUI, 3000); // Обновляем статистику каждые 3 секунды для быстрого отображения изменений из бота
-console.log('✅ Приложение инициализировано, обновление каждые 3 секунды');
+setInterval(refreshUI, 5000); // Обновляем статистику каждые 5 секунд для быстрого отображения изменений из бота
+console.log('✅ Приложение инициализировано, обновление каждые 5 секунд');
 
 
