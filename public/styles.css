@@ -196,14 +196,6 @@ body {
 }
 
 /* Новый прогресс-бар по разрядам */
-.progress-container {
-  margin-top: 20px;
-  padding: 20px;
-  background: rgba(255,255,255,0.03);
-  border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.1);
-}
-
 .progress-bar-new {
   position: relative;
   width: 100%;
@@ -215,6 +207,7 @@ body {
   box-shadow: 
     0 8px 32px rgba(0,0,0,0.4),
     inset 0 2px 4px rgba(255,255,255,0.1);
+  margin-top: 20px;
 }
 
 .progress-fill-new {
@@ -535,12 +528,8 @@ body {
   }
   
   /* Адаптивные стили для прогресс-бара */
-  .progress-container {
-    margin-top: 16px;
-    padding: 16px;
-  }
-  
   .progress-bar-new {
+    margin-top: 16px;
     height: 28px;
   }
   
