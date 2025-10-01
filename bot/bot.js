@@ -45,6 +45,9 @@ const adminKeyboard = {
       [
         { text: '🔄 Сбросить данные', callback_data: 'admin_reset' },
         { text: '📈 Статистика', callback_data: 'admin_stats' }
+      ],
+      [
+        { text: '⏰ Установить время забега', callback_data: 'admin_set_race_time' }
       ]
     ]
   }
@@ -121,6 +124,19 @@ if (bot) {
         bot.answerCallbackQuery(callbackQuery.id);
         break;
 
+      case 'admin_set_race_time':
+        chatState.set(chatId, { action: 'waiting_race_time' });
+        bot.sendMessage(chatId, 
+          '⏰ Введите дату и время начала забега в формате:\n\n' +
+          '📅 <b>Дата:</b> ДД.ММ.ГГГГ (например: 01.10.2025)\n' +
+          '🕐 <b>Время:</b> ЧЧ:ММ (например: 14:00)\n\n' +
+          'Пример: <code>01.10.2025 14:00</code>\n\n' +
+          'Забег будет длиться 24 часа с указанного времени.',
+          { parse_mode: 'HTML' }
+        );
+        bot.answerCallbackQuery(callbackQuery.id);
+        break;
+
       case 'admin_stats':
         try {
           const resp = await fetch(`${SERVER_URL}/api/stats`);
@@ -157,9 +173,25 @@ if (bot) {
             kmToNext = 180 - totalKm;
           }
           
-          // Вычисляем прошедшее время
-          const raceStart = new Date('2024-10-04T10:00:00+03:00');
-          const raceEnd = new Date('2024-10-05T10:00:00+03:00');
+          // Получаем время забега с сервера
+          let raceStart, raceEnd;
+          try {
+            const raceTimeResp = await fetch(`${SERVER_URL}/api/set_race_time`);
+            if (raceTimeResp.ok) {
+              const raceTime = await raceTimeResp.json();
+              raceStart = new Date(raceTime.race_start);
+              raceEnd = new Date(raceTime.race_end);
+            } else {
+              // Используем время по умолчанию
+              raceStart = new Date('2025-10-01T14:00:00+03:00');
+              raceEnd = new Date('2025-10-02T14:00:00+03:00');
+            }
+          } catch (error) {
+            console.error('Ошибка получения времени забега:', error);
+            raceStart = new Date('2025-10-01T14:00:00+03:00');
+            raceEnd = new Date('2025-10-02T14:00:00+03:00');
+          }
+
           const now = new Date();
           const elapsedMs = Math.max(0, now - raceStart);
           const elapsedHours = Math.floor(elapsedMs / 3600000);
@@ -367,6 +399,78 @@ if (bot) {
         }
       } catch (error) {
         bot.sendMessage(chatId, '❌ Ошибка сервера');
+      } finally {
+        chatState.delete(chatId);
+      }
+    } else if (state.action === 'waiting_race_time') {
+      // Парсим дату и время в формате "ДД.ММ.ГГГГ ЧЧ:ММ"
+      const timeRegex = /^(\d{1,2})\.(\d{1,2})\.(\d{4})\s+(\d{1,2}):(\d{2})$/;
+      const match = text.match(timeRegex);
+      
+      if (!match) {
+        bot.sendMessage(chatId, 
+          '❌ Неверный формат даты и времени!\n\n' +
+          'Используйте формат: <code>ДД.ММ.ГГГГ ЧЧ:ММ</code>\n' +
+          'Пример: <code>01.10.2025 14:00</code>',
+          { parse_mode: 'HTML' }
+        );
+        return;
+      }
+
+      const [, day, month, year, hour, minute] = match;
+      const raceStart = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hour.padStart(2, '0')}:${minute}:00+03:00`);
+      const raceEnd = new Date(raceStart.getTime() + 24 * 60 * 60 * 1000); // +24 часа
+
+      // Проверяем, что дата в будущем
+      if (raceStart <= new Date()) {
+        bot.sendMessage(chatId, '❌ Время забега должно быть в будущем!');
+        return;
+      }
+
+      try {
+        const resp = await fetch(`${SERVER_URL}/api/set_race_time`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            race_start: raceStart.toISOString(),
+            race_end: raceEnd.toISOString()
+          })
+        });
+        const result = await resp.json();
+
+        if (result.success) {
+          const startStr = raceStart.toLocaleString('ru-RU', {
+            timeZone: 'Europe/Volgograd',
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+          
+          const endStr = raceEnd.toLocaleString('ru-RU', {
+            timeZone: 'Europe/Volgograd',
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+
+          bot.sendMessage(
+            chatId,
+            `✅ Время забега успешно установлено!\n\n` +
+            `🏁 <b>Старт:</b> ${startStr}\n` +
+            `🏆 <b>Финиш:</b> ${endStr}\n\n` +
+            `⏱ Длительность: 24 часа`,
+            { parse_mode: 'HTML', ...adminKeyboard }
+          );
+        } else {
+          bot.sendMessage(chatId, '❌ Ошибка при установке времени забега');
+        }
+      } catch (error) {
+        console.error('Ошибка установки времени забега:', error);
+        bot.sendMessage(chatId, '❌ Ошибка сервера при установке времени');
       } finally {
         chatState.delete(chatId);
       }

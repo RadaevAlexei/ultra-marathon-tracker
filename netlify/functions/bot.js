@@ -109,6 +109,9 @@ exports.handler = async (event, context) => {
           [
             { text: '🔄 Сбросить данные', callback_data: 'admin_reset' },
             { text: '📈 Статистика', callback_data: 'admin_stats' }
+          ],
+          [
+            { text: '⏰ Установить время забега', callback_data: 'admin_set_race_time' }
           ]
         ]
       }
@@ -131,57 +134,130 @@ exports.handler = async (event, context) => {
         } else {
           await sendMessage(chatId, '❌ У вас нет прав администратора');
         }
-      } else if (isAdmin(userId) && !isNaN(parseFloat(text))) {
-        // Обработка числового ввода для обновления км/кругов
-        const number = parseFloat(text);
-        if (number > 0) {
-          const userState = userStates[userId];
+      } else if (isAdmin(userId)) {
+        const userState = userStates[userId];
+        
+        if (userState === 'setting_race_time') {
+          // Парсим дату и время в формате "ДД.ММ.ГГГГ ЧЧ:ММ"
+          const timeRegex = /^(\d{1,2})\.(\d{1,2})\.(\d{4})\s+(\d{1,2}):(\d{2})$/;
+          const match = text.match(timeRegex);
           
+          if (!match) {
+            await sendMessage(chatId, 
+              '❌ Неверный формат даты и времени!\n\n' +
+              'Используйте формат: <code>ДД.ММ.ГГГГ ЧЧ:ММ</code>\n' +
+              'Пример: <code>01.10.2025 14:00</code>',
+              { parse_mode: 'HTML' }
+            );
+            return;
+          }
+
+          const [, day, month, year, hour, minute] = match;
+          const raceStart = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hour.padStart(2, '0')}:${minute}:00+03:00`);
+          const raceEnd = new Date(raceStart.getTime() + 24 * 60 * 60 * 1000); // +24 часа
+
+          // Проверяем, что дата в будущем
+          if (raceStart <= new Date()) {
+            await sendMessage(chatId, '❌ Время забега должно быть в будущем!');
+            return;
+          }
+
           try {
-            let response;
-            let successMessage;
-            
-            if (userState === 'adding_laps') {
-              // Обновляем круги
-              console.log(`🔄 Отправляем круги: ${number}`);
-              const requestBody = { lapsNumber: number };
-              console.log(`📤 Request body:`, requestBody);
-              
-              response = await fetch(`${serverUrl}/.netlify/functions/data`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestBody)
+            const response = await fetch(`${serverUrl}/.netlify/functions/set_race_time`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ 
+                race_start: raceStart.toISOString(),
+                race_end: raceEnd.toISOString()
+              })
+            });
+            const result = await response.json();
+
+            if (result.success) {
+              const startStr = raceStart.toLocaleString('ru-RU', {
+                timeZone: 'Europe/Volgograd',
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
               });
-              // Не используем локальное сообщение, только из API
-              successMessage = null;
-            } else {
-              // По умолчанию обновляем километры
-              console.log(`🔄 Отправляем километры: ${number}`);
-              const requestBody = { kmNumber: number };
-              console.log(`📤 Request body:`, requestBody);
               
-              response = await fetch(`${serverUrl}/.netlify/functions/data`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestBody)
+              const endStr = raceEnd.toLocaleString('ru-RU', {
+                timeZone: 'Europe/Volgograd',
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
               });
-              // Не используем локальное сообщение, только из API
-              successMessage = null;
-            }
-            
-            if (response.ok) {
-              const result = await response.json();
-              // Всегда используем сообщение из API
-              await sendMessage(chatId, result.message, adminKeyboard);
-              
-              // Сбрасываем состояние пользователя
-              delete userStates[userId];
+
+              await sendMessage(chatId,
+                `✅ Время забега успешно установлено!\n\n` +
+                `🏁 <b>Старт:</b> ${startStr}\n` +
+                `🏆 <b>Финиш:</b> ${endStr}\n\n` +
+                `⏱ Длительность: 24 часа`,
+                { parse_mode: 'HTML', ...adminKeyboard }
+              );
             } else {
-              await sendMessage(chatId, '❌ Ошибка обновления данных');
+              await sendMessage(chatId, '❌ Ошибка при установке времени забега');
             }
           } catch (error) {
-            console.error('Error updating data:', error);
-            await sendMessage(chatId, '❌ Ошибка сервера при обновлении данных');
+            console.error('Ошибка установки времени забега:', error);
+            await sendMessage(chatId, '❌ Ошибка сервера при установке времени');
+          } finally {
+            delete userStates[userId];
+          }
+        } else if (!isNaN(parseFloat(text))) {
+          // Обработка числового ввода для обновления км/кругов
+          const number = parseFloat(text);
+          if (number > 0) {
+            try {
+              let response;
+              let successMessage;
+              
+              if (userState === 'adding_laps') {
+                // Обновляем круги
+                console.log(`🔄 Отправляем круги: ${number}`);
+                const requestBody = { lapsNumber: number };
+                console.log(`📤 Request body:`, requestBody);
+                
+                response = await fetch(`${serverUrl}/.netlify/functions/data`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(requestBody)
+                });
+                // Не используем локальное сообщение, только из API
+                successMessage = null;
+              } else {
+                // По умолчанию обновляем километры
+                console.log(`🔄 Отправляем километры: ${number}`);
+                const requestBody = { kmNumber: number };
+                console.log(`📤 Request body:`, requestBody);
+                
+                response = await fetch(`${serverUrl}/.netlify/functions/data`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(requestBody)
+                });
+                // Не используем локальное сообщение, только из API
+                successMessage = null;
+              }
+              
+              if (response.ok) {
+                const result = await response.json();
+                // Всегда используем сообщение из API
+                await sendMessage(chatId, result.message, adminKeyboard);
+                
+                // Сбрасываем состояние пользователя
+                delete userStates[userId];
+              } else {
+                await sendMessage(chatId, '❌ Ошибка обновления данных');
+              }
+            } catch (error) {
+              console.error('Error updating data:', error);
+              await sendMessage(chatId, '❌ Ошибка сервера при обновлении данных');
+            }
           }
         }
       }
@@ -210,6 +286,23 @@ exports.handler = async (event, context) => {
           if (isAdmin(userId)) {
             userStates[userId] = 'adding_laps';
             await sendMessage(chatId, 'Введите количество кругов для обновления:', { reply_markup: { remove_keyboard: true } });
+          } else {
+            await sendMessage(chatId, '❌ У вас нет прав администратора');
+          }
+          await answerCallbackQuery(update.callback_query.id);
+          break;
+
+        case 'admin_set_race_time':
+          if (isAdmin(userId)) {
+            userStates[userId] = 'setting_race_time';
+            await sendMessage(chatId, 
+              '⏰ Введите дату и время начала забега в формате:\n\n' +
+              '📅 <b>Дата:</b> ДД.ММ.ГГГГ (например: 01.10.2025)\n' +
+              '🕐 <b>Время:</b> ЧЧ:ММ (например: 14:00)\n\n' +
+              'Пример: <code>01.10.2025 14:00</code>\n\n' +
+              'Забег будет длиться 24 часа с указанного времени.',
+              { parse_mode: 'HTML', reply_markup: { remove_keyboard: true } }
+            );
           } else {
             await sendMessage(chatId, '❌ У вас нет прав администратора');
           }
@@ -276,28 +369,44 @@ exports.handler = async (event, context) => {
               kmToNext = 180 - totalKm;
             }
             
-          // Вычисляем прошедшее время
-          const raceStart = new Date('2025-10-01T14:00:00+03:00');
-          const raceEnd = new Date('2025-10-02T14:00:00+03:00');
-            const now = new Date();
-            const elapsedMs = Math.max(0, now - raceStart);
-            const elapsedHours = Math.floor(elapsedMs / 3600000);
-            const elapsedMinutes = Math.floor((elapsedMs % 3600000) / 60000);
-            const elapsedTime = elapsedHours > 0 
-              ? `${elapsedHours} ч ${elapsedMinutes} мин`
-              : elapsedHours === 0 && now >= raceStart
-                ? `${elapsedMinutes} мин`
-                : 'Не начался';
+          // Получаем время забега с сервера
+          let raceStart, raceEnd;
+          try {
+            const raceTimeResp = await fetch(`${serverUrl}/.netlify/functions/set_race_time`);
+            if (raceTimeResp.ok) {
+              const raceTime = await raceTimeResp.json();
+              raceStart = new Date(raceTime.race_start);
+              raceEnd = new Date(raceTime.race_end);
+            } else {
+              // Используем время по умолчанию
+              raceStart = new Date('2025-10-01T14:00:00+03:00');
+              raceEnd = new Date('2025-10-02T14:00:00+03:00');
+            }
+          } catch (error) {
+            console.error('Ошибка получения времени забега:', error);
+            raceStart = new Date('2025-10-01T14:00:00+03:00');
+            raceEnd = new Date('2025-10-02T14:00:00+03:00');
+          }
 
-            // Вычисляем оставшееся время
-            const remainingMs = Math.max(0, raceEnd - now);
-            const remainingHours = Math.floor(remainingMs / 3600000);
-            const remainingMinutes = Math.floor((remainingMs % 3600000) / 60000);
-            const remainingTime = now >= raceEnd
-              ? 'Завершен'
-              : now < raceStart
-                ? 'Не начался'
-                : `${remainingHours} ч ${remainingMinutes} мин`;
+          const now = new Date();
+          const elapsedMs = Math.max(0, now - raceStart);
+          const elapsedHours = Math.floor(elapsedMs / 3600000);
+          const elapsedMinutes = Math.floor((elapsedMs % 3600000) / 60000);
+          const elapsedTime = elapsedHours > 0 
+            ? `${elapsedHours} ч ${elapsedMinutes} мин`
+            : elapsedHours === 0 && now >= raceStart
+              ? `${elapsedMinutes} мин`
+              : 'Не начался';
+
+          // Вычисляем оставшееся время
+          const remainingMs = Math.max(0, raceEnd - now);
+          const remainingHours = Math.floor(remainingMs / 3600000);
+          const remainingMinutes = Math.floor((remainingMs % 3600000) / 60000);
+          const remainingTime = now >= raceEnd
+            ? 'Завершен'
+            : now < raceStart
+              ? 'Не начался'
+              : `${remainingHours} ч ${remainingMinutes} мин`;
             
             // Форматируем дату обновления
             const updateDate = new Date(stats.updated_at);

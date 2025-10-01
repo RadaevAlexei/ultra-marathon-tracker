@@ -81,6 +81,32 @@ app.post('/api/add_laps', async (req, res) => {
   }
 });
 
+// Endpoint для установки времени забега
+app.get('/api/set_race_time', async (req, res) => {
+  try {
+    const raceTime = await database.getRaceTime();
+    res.json(raceTime);
+  } catch (error) {
+    console.error('Ошибка получения времени забега:', error);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
+app.post('/api/set_race_time', async (req, res) => {
+  try {
+    const { race_start, race_end } = req.body;
+    if (!race_start || !race_end) {
+      return res.status(400).json({ error: 'Необходимо указать race_start и race_end' });
+    }
+    
+    const result = await database.setRaceTime(race_start, race_end);
+    res.json(result);
+  } catch (error) {
+    console.error('Ошибка установки времени забега:', error);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
 // Главная страница мини-приложения
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));

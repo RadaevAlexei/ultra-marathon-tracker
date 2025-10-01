@@ -2,14 +2,30 @@
 const VOLGOGRAD_TZ = 'Europe/Volgograd';
 
 console.log('🚀 Mini App загружается...');
-function makeLocalRaceTimes() {
-  // ВРЕМЯ ЗАБЕГА: 1-2 октября 2025, старт в 14:00
-  const startTime = new Date('2025-10-01T14:00:00+03:00'); // 01.10.2025 14:00 (UTC+3)
-  const endTime = new Date('2025-10-02T14:00:00+03:00'); // 02.10.2025 14:00 (24 часа забега)
-  
-  return { start: startTime, end: endTime };
+
+// Глобальные переменные для времени забега
+let RACE_START = new Date('2025-10-01T14:00:00+03:00'); // Время по умолчанию
+let RACE_END = new Date('2025-10-02T14:00:00+03:00'); // Время по умолчанию
+
+// Функция для получения времени забега с сервера
+async function fetchRaceTime() {
+  try {
+    const response = await fetch('/.netlify/functions/set_race_time');
+    if (response.ok) {
+      const raceTime = await response.json();
+      RACE_START = new Date(raceTime.race_start);
+      RACE_END = new Date(raceTime.race_end);
+      console.log('⏰ Время забега загружено:', {
+        start: RACE_START.toLocaleString('ru-RU', { timeZone: 'Europe/Volgograd' }),
+        end: RACE_END.toLocaleString('ru-RU', { timeZone: 'Europe/Volgograd' })
+      });
+    } else {
+      console.warn('⚠️ Не удалось загрузить время забега, используется время по умолчанию');
+    }
+  } catch (error) {
+    console.error('❌ Ошибка загрузки времени забега:', error);
+  }
 }
-const { start: RACE_START, end: RACE_END } = makeLocalRaceTimes();
 const LAP_LENGTH_KM = 0.4; // 400 м
 
 const totalKmEl = document.getElementById('totalKilometers');
@@ -104,6 +120,32 @@ function updateProgressToNextRank(currentKm) {
   }
 }
 
+function updateRaceDate() {
+  const raceDateEl = document.getElementById('raceDate');
+  if (raceDateEl) {
+    const startDate = RACE_START.toLocaleDateString('ru-RU', {
+      timeZone: 'Europe/Volgograd',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+    
+    const endDate = RACE_END.toLocaleDateString('ru-RU', {
+      timeZone: 'Europe/Volgograd',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+    
+    // Если забег в один день, показываем только одну дату
+    if (startDate === endDate) {
+      raceDateEl.textContent = startDate;
+    } else {
+      raceDateEl.textContent = `${startDate} - ${endDate}`;
+    }
+  }
+}
+
 
 async function fetchStats() {
   const res = await fetch('/.netlify/functions/data');
@@ -119,6 +161,9 @@ async function refreshUI() {
     const totalKm = Number(data.total_km || 0);
     console.log('📏 Километры:', totalKm);
     totalKmEl.textContent = totalKm.toFixed(2);
+    
+    // Обновляем дату забега в заголовке
+    updateRaceDate();
     
     // Обновляем количество кругов (используем точные вычисления)
     const totalLaps = Math.round(totalKm / LAP_LENGTH_KM);
@@ -246,11 +291,24 @@ function updateRankBlocks(totalKm) {
   });
 }
 
-// Обновляем только при загрузке страницы (без автоматических таймеров)
+// Инициализация приложения
+async function initializeApp() {
+  console.log('🎯 Инициализация приложения...');
+  
+  // Сначала загружаем время забега
+  await fetchRaceTime();
+  
+  // Затем обновляем UI
+  await refreshUI();
+  
+  // Запускаем периодическое обновление
+  setInterval(refreshUI, 2000); // Обновляем статистику каждые 2 секунды для быстрого отображения изменений из бота
+  setInterval(tickTimer, 1000); // Обновляем таймер каждую секунду
+  
+  console.log('✅ Приложение инициализировано, обновление каждые 2 секунды');
+}
 
-console.log('🎯 Инициализация приложения...');
-refreshUI();
-setInterval(refreshUI, 2000); // Обновляем статистику каждые 2 секунды для быстрого отображения изменений из бота
-console.log('✅ Приложение инициализировано, обновление каждые 2 секунды');
+// Запускаем инициализацию
+initializeApp();
 
 
