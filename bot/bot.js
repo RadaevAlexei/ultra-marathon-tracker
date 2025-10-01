@@ -159,6 +159,7 @@ if (bot) {
           
           // Вычисляем прошедшее время
           const raceStart = new Date('2025-10-01T10:00:00+03:00');
+          const raceEnd = new Date('2025-10-02T10:00:00+03:00');
           const now = new Date();
           const elapsedMs = Math.max(0, now - raceStart);
           const elapsedHours = Math.floor(elapsedMs / 3600000);
@@ -168,6 +169,16 @@ if (bot) {
             : elapsedHours === 0 && now >= raceStart
               ? `${elapsedMinutes} мин`
               : 'Не начался';
+
+          // Вычисляем оставшееся время
+          const remainingMs = Math.max(0, raceEnd - now);
+          const remainingHours = Math.floor(remainingMs / 3600000);
+          const remainingMinutes = Math.floor((remainingMs % 3600000) / 60000);
+          const remainingTime = now >= raceEnd
+            ? 'Завершен'
+            : now < raceStart
+              ? 'Не начался'
+              : `${remainingHours} ч ${remainingMinutes} мин`;
           
           // Форматируем дату обновления
           const updateDate = new Date(stats.updated_at);
@@ -209,6 +220,9 @@ if (bot) {
           
           message += `⏱ <b>Прошло времени:</b>\n`;
           message += `   ${elapsedTime}\n\n`;
+
+          message += `⏳ <b>Осталось времени:</b>\n`;
+          message += `   ${remainingTime}\n\n`;
           
           message += `📈 <b>Прогресс до КМС:</b>\n`;
           message += `   ${progressBar} ${progress.toFixed(0)}%\n\n`;
