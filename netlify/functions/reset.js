@@ -1,15 +1,4 @@
-const { getStore } = require('@netlify/blobs');
-
-async function saveStats(stats) {
-  try {
-    const store = getStore('run-stats');
-    await store.set('current', JSON.stringify(stats));
-    return true;
-  } catch (error) {
-    console.error('Ошибка сохранения данных:', error);
-    return false;
-  }
-}
+const { saveStats } = require('./storage');
 
 exports.handler = async (event, context) => {
   // Настройка CORS

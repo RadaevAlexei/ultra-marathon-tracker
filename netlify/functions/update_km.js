@@ -1,34 +1,4 @@
-const { getStore } = require('@netlify/blobs');
-
-async function getStats() {
-  try {
-    const store = getStore('run-stats');
-    const data = await store.get('current');
-    if (data) {
-      return JSON.parse(data);
-    }
-  } catch (error) {
-    console.error('Ошибка чтения данных:', error);
-  }
-  
-  // Возвращаем начальные данные
-  return {
-    id: 1,
-    total_km: 0.0,
-    updated_at: new Date().toISOString()
-  };
-}
-
-async function saveStats(stats) {
-  try {
-    const store = getStore('run-stats');
-    await store.set('current', JSON.stringify(stats));
-    return true;
-  } catch (error) {
-    console.error('Ошибка сохранения данных:', error);
-    return false;
-  }
-}
+const { getStats, saveStats } = require('./storage');
 
 exports.handler = async (event, context) => {
   // Настройка CORS

@@ -133,8 +133,8 @@ exports.handler = async (event, context) => {
         const number = parseFloat(text);
         if (number > 0) {
           try {
-            // Пытаемся добавить километры (тестовый режим)
-            const response = await fetch(`${serverUrl}/.netlify/functions/update_km_simple`, {
+            // Пытаемся добавить километры
+            const response = await fetch(`${serverUrl}/.netlify/functions/update_km`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ kmNumber: number })
