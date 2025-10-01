@@ -86,15 +86,19 @@ body {
 }
 
 .start-card {
-  background: linear-gradient(180deg, rgba(255, 107, 107, 0.2), rgba(255, 107, 107, 0.1));
-  border: 2px solid rgba(255, 107, 107, 0.6);
-  box-shadow: 0 12px 28px rgba(255, 107, 107, 0.3);
+  background: #cc3a47 !important;
+  background-color: #cc3a47 !important;
+  border: 2px solid #cc3a47 !important;
+  box-shadow: 0 12px 28px rgba(204, 58, 71, 0.6) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  opacity: 1 !important;
   min-height: 120px;
   padding: 24px 18px;
 }
 
 .start-card::after {
-  background: radial-gradient(closest-side, rgba(255, 107, 107, 0.3), transparent);
+  display: none !important;
 }
 
 /* Стили для блока LIVE */
@@ -437,6 +441,20 @@ body {
     font-size: 12px;
   }
   
+}
+
+/* МАКСИМАЛЬНО СПЕЦИФИЧНОЕ ПРАВИЛО ДЛЯ БЛОКА ТАЙМЕРА */
+.stat-block.start-block .stat-card.start-card,
+.start-block .stat-card.center.start-card,
+div.start-block div.stat-card.start-card {
+  background: #cc3a47 !important;
+  background-color: #cc3a47 !important;
+  border: 2px solid #cc3a47 !important;
+  box-shadow: 0 12px 28px rgba(204, 58, 71, 0.6) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  opacity: 1 !important;
+  mix-blend-mode: normal !important;
 }
 
 
