@@ -129,16 +129,100 @@ if (bot) {
           const totalKm = Number(stats.total_km || 0);
           const totalLaps = Math.round(totalKm / 0.4);
           
-          bot.sendMessage(
-            chatId,
-            `📊 Текущая статистика:\n\n` +
-            `🏃‍♂️ Километры: ${totalKm.toFixed(2)} км\n` +
-            `🔄 Круги: ${totalLaps} кругов\n` +
-            `🕐 Обновлено: ${stats.updated_at || 'N/A'}`,
-            adminKeyboard
-          );
+          // Вычисляем разряд
+          let rank = 'Без разряда';
+          let rankEmoji = '⚪️';
+          let nextRank = 160;
+          let kmToNext = 160 - totalKm;
+          
+          if (totalKm >= 220) {
+            rank = 'КМС';
+            rankEmoji = '��';
+            nextRank = null;
+            kmToNext = 0;
+          } else if (totalKm >= 200) {
+            rank = '1-й';
+            rankEmoji = '🔴';
+            nextRank = 220;
+            kmToNext = 220 - totalKm;
+          } else if (totalKm >= 180) {
+            rank = '2-й';
+            rankEmoji = '🟡';
+            nextRank = 200;
+            kmToNext = 200 - totalKm;
+          } else if (totalKm >= 160) {
+            rank = '3-й';
+            rankEmoji = '🟢';
+            nextRank = 180;
+            kmToNext = 180 - totalKm;
+          }
+          
+          // Вычисляем прошедшее время
+          const raceStart = new Date('2025-10-01T10:00:00+03:00');
+          const now = new Date();
+          const elapsedMs = Math.max(0, now - raceStart);
+          const elapsedHours = Math.floor(elapsedMs / 3600000);
+          const elapsedMinutes = Math.floor((elapsedMs % 3600000) / 60000);
+          const elapsedTime = elapsedHours > 0 
+            ? `${elapsedHours} ч ${elapsedMinutes} мин`
+            : elapsedHours === 0 && now >= raceStart
+              ? `${elapsedMinutes} мин`
+              : 'Не начался';
+          
+          // Форматируем дату обновления
+          const updateDate = new Date(stats.updated_at);
+          const dateStr = updateDate.toLocaleString('ru-RU', {
+            timeZone: 'Europe/Volgograd',
+            day: '2-digit',
+            month: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+          });
+          
+          // Прогресс-бар
+          const maxKm = 220;
+          const progress = Math.min(100, (totalKm / maxKm) * 100);
+          const barLength = 10;
+          const filledBars = Math.round((progress / 100) * barLength);
+          const progressBar = '▓'.repeat(filledBars) + '░'.repeat(barLength - filledBars);
+          
+          // Красивое сообщение (используем HTML разметку)
+          let message = `📊 <b>СТАТИСТИКА ЗАБЕГА</b>\n`;
+          message += `━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+          
+          message += `🏃‍♂️ <b>Километры:</b>\n`;
+          message += `   ${totalKm.toFixed(2)} км\n\n`;
+          
+          message += `🔄 <b>Круги:</b>\n`;
+          message += `   ${totalLaps} кругов\n\n`;
+          
+          message += `${rankEmoji} <b>Разряд:</b>\n`;
+          message += `   ${rank}\n\n`;
+          
+          if (nextRank) {
+            message += `🎯 <b>До следующего разряда:</b>\n`;
+            message += `   ${kmToNext.toFixed(1)} км (до ${nextRank} км)\n\n`;
+          } else {
+            message += `🏆 <b>Максимальный разряд!</b>\n\n`;
+          }
+          
+          message += `⏱ <b>Прошло времени:</b>\n`;
+          message += `   ${elapsedTime}\n\n`;
+          
+          message += `📈 <b>Прогресс до КМС:</b>\n`;
+          message += `   ${progressBar} ${progress.toFixed(0)}%\n\n`;
+          
+          message += `━━━━━━━━━━━━━━━━━━━━━━\n`;
+          message += `🕐 Обновлено: ${dateStr}`;
+          
+          bot.sendMessage(chatId, message, {
+            ...adminKeyboard,
+            parse_mode: 'HTML'
+          });
           bot.answerCallbackQuery(callbackQuery.id);
         } catch (error) {
+          console.error('Ошибка получения статистики:', error);
           bot.sendMessage(chatId, '❌ Ошибка получения статистики');
           bot.answerCallbackQuery(callbackQuery.id);
         }
