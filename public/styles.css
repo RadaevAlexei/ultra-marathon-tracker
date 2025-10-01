@@ -76,7 +76,7 @@ body {
   border-color: rgba(79, 209, 197, 0.5);
   box-shadow: 0 12px 28px rgba(79, 209, 197, 0.12);
 }
-.stat-value { font-size: 42px; font-weight: 800; letter-spacing: -0.5px; }
+.stat-value { font-size: 42px; font-weight: 800; letter-spacing: -0.5px; display: block; }
 .stat-value.small { font-size: 16px; }
 .stat-value.start-value { font-size: 48px; font-weight: 800; letter-spacing: 1px; }
 
@@ -107,16 +107,66 @@ body {
 }
 
 .live-card {
-  background: linear-gradient(180deg, rgba(127, 213, 142, 0.4), rgba(127, 213, 142, 0.3));
-  border: 2px solid rgba(127, 213, 142, 0.8);
-  box-shadow: 0 12px 28px rgba(127, 213, 142, 0.5);
+  background: #7fd58e !important;
+  background-color: #7fd58e !important;
+  border: 2px solid #7fd58e !important;
+  box-shadow: 0 12px 28px rgba(127, 213, 142, 0.6) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  opacity: 1 !important;
   min-height: 120px;
   padding: 24px 18px;
 }
 
 .live-card::after {
-  background: radial-gradient(closest-side, rgba(127, 213, 142, 0.3), transparent);
+  display: none !important;
 }
+
+/* Стили для цветных блоков разрядов */
+.rank-card.rank-achieved {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  opacity: 1 !important;
+  border: 2px solid !important;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6) !important;
+}
+
+.rank-card.rank-achieved::after {
+  display: none !important;
+}
+
+/* 3-й разряд - зеленый (160 км) */
+#rank3-card.rank-achieved {
+  background: #4CAF50 !important;
+  background-color: #4CAF50 !important;
+  border-color: #4CAF50 !important;
+  box-shadow: 0 12px 28px rgba(76, 175, 80, 0.6) !important;
+}
+
+/* 2-й разряд - желтый (180 км) */
+#rank2-card.rank-achieved {
+  background: #FFC107 !important;
+  background-color: #FFC107 !important;
+  border-color: #FFC107 !important;
+  box-shadow: 0 12px 28px rgba(255, 193, 7, 0.6) !important;
+}
+
+/* 1-й разряд - красный (200 км) */
+#rank1-card.rank-achieved {
+  background: #F44336 !important;
+  background-color: #F44336 !important;
+  border-color: #F44336 !important;
+  box-shadow: 0 12px 28px rgba(244, 67, 54, 0.6) !important;
+}
+
+/* КМС - фиолетовый (220 км) */
+#kms-card.rank-achieved {
+  background: #9C27B0 !important;
+  background-color: #9C27B0 !important;
+  border-color: #9C27B0 !important;
+  box-shadow: 0 12px 28px rgba(156, 39, 176, 0.6) !important;
+}
+
 .stat-label { color: var(--muted); margin-top: 6px; font-size: 13px; }
 .stat-icon { display: none; }
 
@@ -317,7 +367,35 @@ body {
 }
 
 
-.stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* Стили для блоков детальной статистики */
+.detailed-stats .stat-block {
+  width: 100%;
+}
+
+.detailed-stats .stat-card {
+  min-height: 100px;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detailed-stats .stat-value {
+  font-size: 24px;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.detailed-stats .stat-value:first-child {
+  font-size: 28px;
+  font-weight: 900;
+}
+
+.detailed-stats .stat-value:last-child {
+  font-size: 18px;
+  color: var(--muted);
+  font-weight: 600;
+}
 
 .ranks-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
@@ -332,9 +410,13 @@ body {
   box-shadow: 0 10px 28px rgba(255, 107, 107, 0.18);
 }
 .timer-item.state-live {
-  background: rgba(127, 213, 142, 0.4); /* более яркий зелёный */
-  border-color: rgba(127, 213, 142, 0.8);
-  box-shadow: 0 10px 28px rgba(127, 213, 142, 0.5);
+  background: #7fd58e !important; /* полностью непрозрачный зеленый */
+  background-color: #7fd58e !important;
+  border-color: #7fd58e !important;
+  box-shadow: 0 10px 28px rgba(127, 213, 142, 0.6) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  opacity: 1 !important;
 }
 
 .badge-live {
@@ -366,6 +448,15 @@ body {
   
   .stats-grid {
     grid-template-columns: 1fr;
+  }
+  
+  /* Адаптивные стили для блоков детальной статистики */
+  .detailed-stats .stat-value:first-child {
+    font-size: 24px;
+  }
+  
+  .detailed-stats .stat-value:last-child {
+    font-size: 16px;
   }
   
   .ranks-grid {

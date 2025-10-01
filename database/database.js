@@ -84,7 +84,7 @@ class Database {
       }
       const updateSql = `
         UPDATE run_stats
-        SET total_km = total_km + ?,
+        SET total_km = ?,
             updated_at = CURRENT_TIMESTAMP
         WHERE id = (SELECT id FROM run_stats ORDER BY id DESC LIMIT 1)
       `;

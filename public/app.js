@@ -1,16 +1,12 @@
 // Волгоградский часовой пояс (UTC+3 круглый год)
 const VOLGOGRAD_TZ = 'Europe/Volgograd';
 function makeLocalRaceTimes() {
-  // Фиксируем старт/финиш забега 2025 года по Волгограду 10:00 → 10:00
-  const startStr = '2025-10-04T10:00:00';
-  const endStr = '2025-10-05T10:00:00';
-  // Парсим как время этой TZ и получаем UTC Date через Intl API
-  const start = new Date(new Date(startStr + 'Z').toLocaleString('en-US', { timeZone: VOLGOGRAD_TZ }));
-  const end = new Date(new Date(endStr + 'Z').toLocaleString('en-US', { timeZone: VOLGOGRAD_TZ }));
-  // Прямая конвертация через Date и TZ может разниться, поэтому дополнительно используем Date.UTC с компонентами
-  const s = new Date(`${startStr}+03:00`); // Волгоград UTC+3
-  const e = new Date(`${endStr}+03:00`);
-  return { start: s, end: e };
+  // ДЕМО РЕЖИМ LIVE: Забег начался 10 часов назад и закончится через 14 часов
+  const now = new Date();
+  const startTime = new Date(now.getTime() - 10 * 60 * 60 * 1000); // 10 часов назад
+  const endTime = new Date(now.getTime() + 14 * 60 * 60 * 1000); // 14 часов вперед
+  
+  return { start: startTime, end: endTime };
 }
 const { start: RACE_START, end: RACE_END } = makeLocalRaceTimes();
 const LAP_LENGTH_KM = 0.4; // 400 м
@@ -20,7 +16,6 @@ const averagePaceKmhEl = document.getElementById('averagePaceKmh');
 const averagePaceMinKmEl = document.getElementById('averagePaceMinKm');
 const directionTextEl = document.getElementById('directionText');
 const currentLapEl = document.getElementById('currentLap');
-const forecastKmEl = document.getElementById('forecastKm');
 const progressFillNewEl = document.getElementById('progressFillNew');
 const rankTextEl = document.getElementById('rankText');
 
@@ -36,12 +31,10 @@ timerContainer.innerHTML = `
       <div class="stat-value start-value" id="untilStart">--:--:--</div>
     </div>
   </div>
-  <div class="timer-grid">
-    <div class="stat-block elapse live-block" id="elapsedItem" style="display:none;">
-      <div class="block-title">Прошло времени <span id="liveBadge" class="badge-live" style="display:none;">LIVE</span></div>
-      <div class="stat-card center live-card">
-        <div class="stat-value small" id="elapsed">00:00:00</div>
-      </div>
+  <div id="elapsedItem" class="stat-block start-block" style="display:none; margin-bottom:12px;">
+    <div class="block-title">Прошло времени <span id="liveBadge" class="badge-live" style="display:none;">LIVE</span></div>
+    <div class="stat-card center live-card">
+      <div class="stat-value start-value" id="elapsed">00:00:00</div>
     </div>
   </div>
 `;
@@ -73,13 +66,17 @@ function computeForecastKm(currentKm, elapsedHours) {
 }
 
 function computeDirectionAndLap(totalKm) {
-  if (totalKm <= 0) return { direction: '--', lapNumber: 0 };
+  if (totalKm <= 0) return { direction: 'По часовой', directionAlt: 'Против часовой' };
   
-  const currentLap = Math.floor(totalKm / LAP_LENGTH_KM) + 1;
+  const currentLap = Math.round(totalKm / LAP_LENGTH_KM) + 1;
   const isOddLap = currentLap % 2 === 1;
-  const direction = isOddLap ? '↺ Против' : '↻ По';
   
-  return { direction, lapNumber: currentLap };
+  // Чередуем направление каждые 2 круга (каждый час)
+  if (isOddLap) {
+    return { direction: 'По часовой', directionAlt: 'Против часовой' };
+  } else {
+    return { direction: 'Против часовой', directionAlt: 'По часовой' };
+  }
 }
 
 function computeRank(forecastKm) {
@@ -133,6 +130,13 @@ async function refreshUI() {
     const data = await fetchStats();
     const totalKm = Number(data.total_km || 0);
     totalKmEl.textContent = totalKm.toFixed(2);
+    
+    // Обновляем количество кругов (используем точные вычисления)
+    const totalLaps = Math.round(totalKm / LAP_LENGTH_KM);
+    const totalLapsEl = document.getElementById('totalLaps');
+    if (totalLapsEl) {
+      totalLapsEl.textContent = totalLaps;
+    }
 
     const now = new Date();
     const elapsedMs = Math.min(RACE_END - RACE_START, Math.max(0, now - RACE_START));
@@ -166,16 +170,23 @@ async function refreshUI() {
     } else {
       averagePaceMinKmEl.textContent = '--:-- мин/км';
     }
-    
-    forecastKmEl.textContent = `${forecast.toFixed(1)} км`;
 
-    // Обновление направления и текущего круга
-    const { direction, lapNumber } = computeDirectionAndLap(totalKm);
+    // Обновление направления
+    const { direction, directionAlt } = computeDirectionAndLap(totalKm);
     directionTextEl.textContent = direction;
-    currentLapEl.textContent = lapNumber > 0 ? `Круг: ${lapNumber}` : 'Круг: --';
+    currentLapEl.textContent = directionAlt;
 
     updateProgressToNextRank(totalKm);
     updateCircularTimer(elapsedMs);
+    updateRankBlocks(totalKm);
+    
+    // Обновляем текст в блоке прогресса забега
+    const bigTimeEl = document.getElementById('bigTime');
+    const bigSubEl = document.getElementById('bigSub');
+    if (bigTimeEl && bigSubEl) {
+      bigTimeEl.textContent = formatHHMMSS(elapsedMs);
+      bigSubEl.textContent = 'Прошло времени';
+    }
 
     // Показ/скрытие блоков в зависимости от времени
     const untilStartItem = document.getElementById('untilStartItem');
@@ -227,10 +238,35 @@ function tickTimer() {
   }
 }
 
-// Авто‑анимация не нужна — прогресс идёт от времени
+// Функция для обновления блоков разрядов
+function updateRankBlocks(totalKm) {
+  // Пороговые значения для каждого разряда
+  const ranks = [
+    { id: 'rank3-card', threshold: 160, name: '3-й разряд' },
+    { id: 'rank2-card', threshold: 180, name: '2-й разряд' },
+    { id: 'rank1-card', threshold: 200, name: '1-й разряд' },
+    { id: 'kms-card', threshold: 220, name: 'КМС' }
+  ];
+  
+  // Обновляем каждый блок разряда
+  ranks.forEach(rank => {
+    const cardElement = document.getElementById(rank.id);
+    if (cardElement) {
+      if (totalKm >= rank.threshold) {
+        // Добавляем класс для активированного разряда
+        cardElement.classList.add('rank-card', 'rank-achieved');
+        console.log(`✅ ${rank.name} достигнут! (${totalKm} км >= ${rank.threshold} км)`);
+      } else {
+        // Убираем класс для неактивированного разряда
+        cardElement.classList.remove('rank-card', 'rank-achieved');
+      }
+    }
+  });
+}
+
+// Обновляем только при загрузке страницы (без автоматических таймеров)
 
 refreshUI();
-setInterval(refreshUI, 10000);
-setInterval(tickTimer, 1000);
+setInterval(refreshUI, 10000); // Обновляем статистику каждые 10 секунд, но не таймер
 
 

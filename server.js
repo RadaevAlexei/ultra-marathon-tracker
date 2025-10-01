@@ -43,6 +43,44 @@ app.post('/api/update_km', async (req, res) => {
   }
 });
 
+// Новый endpoint для добавления кругов
+app.post('/api/add_laps', async (req, res) => {
+  try {
+    const { laps } = req.body;
+    if (laps === undefined || isNaN(laps)) {
+      return res.status(400).json({ error: 'Некорректные данные' });
+    }
+    
+    const LAP_LENGTH_KM = 0.4;
+    const lapsNumber = Number(laps);
+    
+    // Получаем текущий километраж
+    const currentStats = await database.getStats();
+    const currentKm = currentStats.total_km;
+    
+    // Вычисляем текущее количество кругов
+    const currentLaps = Math.round(currentKm / LAP_LENGTH_KM);
+    
+    // Добавляем новые круги
+    const newLaps = currentLaps + lapsNumber;
+    const newKm = newLaps * LAP_LENGTH_KM;
+    
+    // Обновляем километраж
+    const result = await database.updateKm(newKm);
+    
+    res.json({
+      success: true,
+      added_laps: lapsNumber,
+      total_laps: newLaps,
+      total_km: result.total_km,
+      updated_at: result.updated_at
+    });
+  } catch (error) {
+    console.error('Ошибка добавления кругов:', error);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
 // Главная страница мини-приложения
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));

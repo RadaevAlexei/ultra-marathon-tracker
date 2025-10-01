@@ -96,23 +96,17 @@
         <section class="detailed-stats">
             <div class="stats-grid">
                 <div class="stat-block">
-                    <div class="block-title">Средний темп</div>
+                    <div class="block-title">СРЕДНИЙ ТЕМП</div>
                     <div class="stat-card center">
-                        <div class="stat-value" id="averagePaceKmh" style="font-size: 24px; margin-bottom: 4px;">0.00 км/ч</div>
-                        <div class="stat-value" id="averagePaceMinKm" style="font-size: 20px; color: var(--muted);">--:-- мин/км</div>
+                        <div class="stat-value" id="averagePaceKmh">20.02 км/ч</div>
+                        <div class="stat-value" id="averagePaceMinKm" style="color: var(--muted);">2:60 мин/км</div>
                     </div>
                 </div>
                 <div class="stat-block">
-                    <div class="block-title">Направление</div>
+                    <div class="block-title">НАПРАВЛЕНИЕ</div>
                     <div class="stat-card center">
-                        <div class="stat-value" id="directionText" style="font-size: 18px;">--</div>
-                        <div class="stat-value" id="currentLap" style="font-size: 14px; color: var(--muted); margin-top: 4px;">Круг: --</div>
-                    </div>
-                </div>
-                <div class="stat-block">
-                    <div class="block-title">Прогноз</div>
-                    <div class="stat-card center">
-                        <div class="stat-value" id="forecastKm">0.0 км</div>
+                        <div class="stat-value" id="directionText">По часовой</div>
+                        <div class="stat-value" id="currentLap" style="color: var(--muted);">Против часовой</div>
                     </div>
                 </div>
             </div>
@@ -121,27 +115,27 @@
         <!-- Разряды -->
         <section class="ranks-section">
             <div class="ranks-grid">
-                <div class="stat-block">
+                <div class="stat-block" id="rank3-block">
                     <div class="block-title">3-й разряд</div>
-                    <div class="stat-card center">
+                    <div class="stat-card center" id="rank3-card">
                         <div class="stat-value">160 км</div>
                     </div>
                 </div>
-                <div class="stat-block">
+                <div class="stat-block" id="rank2-block">
                     <div class="block-title">2-й разряд</div>
-                    <div class="stat-card center">
+                    <div class="stat-card center" id="rank2-card">
                         <div class="stat-value">180 км</div>
                     </div>
                 </div>
-                <div class="stat-block">
+                <div class="stat-block" id="rank1-block">
                     <div class="block-title">1-й разряд</div>
-                    <div class="stat-card center">
+                    <div class="stat-card center" id="rank1-card">
                         <div class="stat-value">200 км</div>
                     </div>
                 </div>
-                <div class="stat-block">
+                <div class="stat-block" id="kms-block">
                     <div class="block-title">КМС</div>
-                    <div class="stat-card center">
+                    <div class="stat-card center" id="kms-card">
                         <div class="stat-value">220 км</div>
                     </div>
                 </div>

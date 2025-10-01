@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест режима LIVE</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 8px; }
+        .status { font-weight: bold; }
+        .live { color: green; }
+        .pre { color: red; }
+        .info { background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Тест режима LIVE</h1>
+    
+    <div class="test-section">
+        <h2>📊 Текущее состояние</h2>
+        <div id="currentStatus" class="status">Загрузка...</div>
+        <div class="info">
+            <strong>Время старта:</strong> <span id="startTime">--</span><br>
+            <strong>Текущее время:</strong> <span id="currentTime">--</span><br>
+            <strong>Прошло времени:</strong> <span id="elapsedTime">--</span>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🎯 Блоки интерфейса</h2>
+        <div class="info">
+            <strong>Блок "До старта":</strong> <span id="untilStartStatus" class="status">--</span><br>
+            <strong>Блок "Прошло времени":</strong> <span id="elapsedStatus" class="status">--</span><br>
+            <strong>Секция "Прогресс забега":</strong> <span id="progressStatus" class="status">--</span><br>
+            <strong>Бейдж "LIVE":</strong> <span id="liveBadgeStatus" class="status">--</span>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>📱 Открыть приложение</h2>
+        <a href="http://localhost:3000/" target="_blank" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">
+            🚀 Открыть приложение в новой вкладке
+        </a>
+    </div>
+
+    <script>
+        // Копируем логику из app.js для тестирования
+        function makeLocalRaceTimes() {
+            // ДЕМО РЕЖИМ LIVE: Забег начался 2 часа назад (8:00) и закончится через 22 часа
+            const now = new Date();
+            const startTime = new Date(now.getTime() - 2 * 60 * 60 * 1000); // 2 часа назад
+            const endTime = new Date(now.getTime() + 22 * 60 * 60 * 1000); // 22 часа вперед
+            
+            return { start: startTime, end: endTime };
+        }
+
+        function formatHHMMSS(ms) {
+            const totalSec = Math.max(0, Math.floor(ms / 1000));
+            const h = Math.floor(totalSec / 3600);
+            const m = Math.floor((totalSec % 3600) / 60);
+            const s = totalSec % 60;
+            return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
+        function updateTestStatus() {
+            const { start: RACE_START, end: RACE_END } = makeLocalRaceTimes();
+            const now = new Date();
+            const elapsedMs = Math.min(RACE_END - RACE_START, Math.max(0, now - RACE_START));
+            
+            // Обновляем информацию
+            document.getElementById('startTime').textContent = RACE_START.toLocaleString('ru-RU');
+            document.getElementById('currentTime').textContent = now.toLocaleString('ru-RU');
+            document.getElementById('elapsedTime').textContent = formatHHMMSS(elapsedMs);
+            
+            // Определяем режим
+            const isLive = now >= RACE_START && now < RACE_END;
+            const statusEl = document.getElementById('currentStatus');
+            
+            if (isLive) {
+                statusEl.textContent = '🟢 РЕЖИМ LIVE (забег идет)';
+                statusEl.className = 'status live';
+            } else if (now < RACE_START) {
+                statusEl.textContent = '🔴 РЕЖИМ ДО СТАРТА (ожидание)';
+                statusEl.className = 'status pre';
+            } else {
+                statusEl.textContent = '⚫ ЗАБЕГ ЗАВЕРШЕН';
+                statusEl.className = 'status';
+            }
+            
+            // Симулируем состояние блоков
+            if (isLive) {
+                document.getElementById('untilStartStatus').textContent = '❌ Скрыт';
+                document.getElementById('elapsedStatus').textContent = '✅ Показан';
+                document.getElementById('progressStatus').textContent = '✅ Показан';
+                document.getElementById('liveBadgeStatus').textContent = '✅ Показан';
+            } else {
+                document.getElementById('untilStartStatus').textContent = '✅ Показан';
+                document.getElementById('elapsedStatus').textContent = '❌ Скрыт';
+                document.getElementById('progressStatus').textContent = '❌ Скрыт';
+                document.getElementById('liveBadgeStatus').textContent = '❌ Скрыт';
+            }
+        }
+
+        // Обновляем статус каждую секунду
+        updateTestStatus();
+        setInterval(updateTestStatus, 1000);
+    </script>
+</body>
+</html>
