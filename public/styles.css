@@ -42,23 +42,7 @@ body {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
 }
 .header h1 { margin: 0 0 6px; font-size: 28px; letter-spacing: 0.3px; text-align: center; }
-.race-info { color: var(--muted); display: flex; gap: 10px; font-size: 13px; justify-content: center; align-items: center; }
-
-.refresh-btn {
-  background: var(--glass-strong);
-  border: 1px solid var(--stroke);
-  color: var(--text);
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 11px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.refresh-btn:hover {
-  background: var(--accent);
-  color: var(--bg-1);
-}
+.race-info { color: var(--muted); display: flex; gap: 10px; font-size: 13px; justify-content: center; }
 
 .main-stats { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 12px; }
 .stat-block .block-title { font-weight: 800; font-size: 13px; color: var(--muted); margin: 0 0 20px 6px; letter-spacing: .4px; text-transform: uppercase; }
