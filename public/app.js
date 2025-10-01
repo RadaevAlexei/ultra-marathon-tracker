@@ -195,8 +195,11 @@ async function refreshUI() {
     const bigTimeEl = document.getElementById('bigTime');
     const bigSubEl = document.getElementById('bigSub');
     if (bigTimeEl && bigSubEl) {
-      bigTimeEl.textContent = formatHHMMSS(elapsedMs);
-      bigSubEl.textContent = 'Прошло времени';
+      // Показываем процент завершения забега
+      const raceDuration = RACE_END - RACE_START;
+      const progressPercent = Math.min(100, Math.max(0, (elapsedMs / raceDuration) * 100));
+      bigTimeEl.textContent = `${Math.round(progressPercent)}%`;
+      bigSubEl.textContent = 'Прогресс забега';
     }
 
     // Показ/скрытие блоков в зависимости от времени
