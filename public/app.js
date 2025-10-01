@@ -30,7 +30,6 @@ const LAP_LENGTH_KM = 0.4; // 400 м
 
 const totalKmEl = document.getElementById('totalKilometers');
 const directionTextEl = document.getElementById('directionText');
-const currentLapEl = document.getElementById('currentLap');
 const progressFillNewEl = document.getElementById('progressFillNew');
 const rankTextEl = document.getElementById('rankText');
 
@@ -209,9 +208,8 @@ async function refreshUI() {
     const forecast = computeForecastKm(totalKm, elapsedHours);
 
     // Обновление направления
-    const { direction, directionAlt } = computeDirectionAndLap(totalKm);
+    const { direction } = computeDirectionAndLap(totalKm);
     directionTextEl.textContent = direction;
-    currentLapEl.textContent = directionAlt;
 
     // Обновляем текущий разряд
     const currentRankEl = document.getElementById('currentRank');

@@ -534,11 +534,6 @@ body {
     gap: 8px;
   }
   
-  .stats-grid {
-    grid-template-columns: 1fr;
-    max-width: 400px;
-    margin: 0 auto;
-  }
   
   /* Адаптивные стили для блоков детальной статистики */
   .detailed-stats .stat-value:first-child {
