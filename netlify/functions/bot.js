@@ -103,8 +103,8 @@ exports.handler = async (event, context) => {
       reply_markup: {
         inline_keyboard: [
           [
-            { text: '➕ Добавить км', callback_data: 'admin_add_km' },
-            { text: '➕ Добавить круги', callback_data: 'admin_add_laps' }
+            { text: '🔄 Обновление км', callback_data: 'admin_add_km' },
+            { text: '🔄 Обновление кругов', callback_data: 'admin_add_laps' }
           ],
           [
             { text: '🔄 Сбросить данные', callback_data: 'admin_reset' },
@@ -142,21 +142,21 @@ exports.handler = async (event, context) => {
             let successMessage;
             
             if (userState === 'adding_laps') {
-              // Добавляем круги
+              // Обновляем круги
               response = await fetch(`${serverUrl}/.netlify/functions/data`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ lapsNumber: number })
               });
-              successMessage = `✅ Добавлено ${number} кругов!\n\nВведите следующее число или выберите действие:`;
+              successMessage = `✅ Обновлено ${number} кругов!\n\nВведите следующее число или выберите действие:`;
             } else {
-              // По умолчанию устанавливаем километры
+              // По умолчанию обновляем километры
               response = await fetch(`${serverUrl}/.netlify/functions/data`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ kmNumber: number })
               });
-              successMessage = `✅ Установлено ${number} км!\n\nВведите следующее число или выберите действие:`;
+              successMessage = `✅ Обновлено ${number} км!\n\nВведите следующее число или выберите действие:`;
             }
             
             if (response.ok) {
@@ -190,7 +190,7 @@ exports.handler = async (event, context) => {
         case 'admin_add_km':
           if (isAdmin(userId)) {
             userStates[userId] = 'adding_km';
-            await sendMessage(chatId, 'Введите количество километров для добавления:', { reply_markup: { remove_keyboard: true } });
+            await sendMessage(chatId, 'Введите количество километров для обновления:', { reply_markup: { remove_keyboard: true } });
           } else {
             await sendMessage(chatId, '❌ У вас нет прав администратора');
           }
@@ -200,7 +200,7 @@ exports.handler = async (event, context) => {
         case 'admin_add_laps':
           if (isAdmin(userId)) {
             userStates[userId] = 'adding_laps';
-            await sendMessage(chatId, 'Введите количество кругов для добавления:', { reply_markup: { remove_keyboard: true } });
+            await sendMessage(chatId, 'Введите количество кругов для обновления:', { reply_markup: { remove_keyboard: true } });
           } else {
             await sendMessage(chatId, '❌ У вас нет прав администратора');
           }

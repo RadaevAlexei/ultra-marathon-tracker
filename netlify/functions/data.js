@@ -100,25 +100,21 @@ exports.handler = async (event, context) => {
               success: true, 
               ...newStats,
               total_laps: laps,
-              message: `Установлено ${km} км (${laps} кругов)`
+              message: `Обновлено ${km} км (${laps} кругов)`
             })
           };
         }
       }
       
-      // Добавить круги (конвертировать в километры)
+      // Обновить круги (конвертировать в километры)
       if (body.lapsNumber !== undefined) {
         const currentStats = await getStats();
-        const lapsToAdd = Number(body.lapsNumber);
-        const kmToAdd = Math.round((lapsToAdd * 0.4) * 100) / 100; // 400 метров за круг, округляем до 2 знаков
-        
-        // Добавляем к текущим значениям
-        const newKm = Math.round((currentStats.total_km + kmToAdd) * 100) / 100;
-        const totalLaps = Math.round(newKm / 0.4);
+        const laps = Number(body.lapsNumber);
+        const km = Math.round((laps * 0.4) * 100) / 100; // 400 метров за круг, округляем до 2 знаков
         
         const newStats = {
           ...currentStats,
-          total_km: newKm,
+          total_km: km,
           updated_at: new Date().toISOString()
         };
         
@@ -129,10 +125,8 @@ exports.handler = async (event, context) => {
             body: JSON.stringify({ 
               success: true, 
               ...newStats,
-              total_laps: totalLaps,
-              added_laps: lapsToAdd,
-              added_km: kmToAdd,
-              message: `Добавлено ${lapsToAdd} кругов (${kmToAdd} км). Всего: ${newKm} км (${totalLaps} кругов)`
+              total_laps: laps,
+              message: `Обновлено ${laps} кругов (${km} км)`
             })
           };
         }
