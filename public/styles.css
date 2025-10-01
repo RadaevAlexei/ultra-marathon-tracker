@@ -599,12 +599,12 @@ body {
   /* Адаптивные стили для прогресс-бара */
   .progress-bar-new {
     margin-top: 16px;
-    height: 112px;
+    height: 224px;
   }
   
   .progress-marks {
-    top: 120px;
-    height: 112px;
+    top: 232px;
+    height: 224px;
   }
   
   .mark span {
