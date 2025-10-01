@@ -253,6 +253,19 @@ body {
   animation: shimmer 2s ease-in-out infinite;
 }
 
+.progress-percentage-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #fff;
+  font-weight: 800;
+  font-size: 14px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+  z-index: 5;
+  pointer-events: none;
+}
+
 @keyframes gradientShift {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
@@ -325,71 +338,6 @@ body {
   text-shadow: 0 1px 3px rgba(0,0,0,0.7);
 }
 
-.progress-labels {
-  margin-top: 40px;
-  text-align: center;
-  padding: 20px;
-  background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.1);
-  backdrop-filter: blur(8px);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-}
-
-.rank-text {
-  color: #fff;
-  font-size: 16px;
-  font-weight: 700;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.6);
-  margin-bottom: 12px;
-  letter-spacing: 0.3px;
-}
-
-.progress-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 16px;
-  font-size: 14px;
-  color: rgba(255,255,255,0.9);
-  gap: 16px;
-}
-
-.progress-current {
-  font-weight: 700;
-  color: #667eea;
-  font-size: 15px;
-  text-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
-  background: rgba(102, 126, 234, 0.1);
-  padding: 6px 12px;
-  border-radius: 8px;
-  border: 1px solid rgba(102, 126, 234, 0.2);
-}
-
-.progress-target {
-  font-weight: 700;
-  color: #f093fb;
-  font-size: 15px;
-  text-shadow: 0 2px 4px rgba(240, 147, 251, 0.3);
-  background: rgba(240, 147, 251, 0.1);
-  padding: 6px 12px;
-  border-radius: 8px;
-  border: 1px solid rgba(240, 147, 251, 0.2);
-}
-
-.progress-percentage {
-  font-weight: 800;
-  color: #fff;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 8px 16px;
-  border-radius: 10px;
-  border: 2px solid rgba(255,255,255,0.2);
-  font-size: 16px;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
-  min-width: 60px;
-  text-align: center;
-}
 
 .stadium-container { display: flex; justify-content: center; }
 .stadium-track { display:none; }
@@ -610,33 +558,6 @@ body {
     font-size: 11px;
   }
   
-  .progress-labels {
-    margin-top: 32px;
-    padding: 16px;
-  }
-  
-  .rank-text {
-    font-size: 15px;
-    margin-bottom: 10px;
-  }
-  
-  .progress-info {
-    font-size: 13px;
-    margin-top: 12px;
-    gap: 12px;
-  }
-  
-  .progress-current,
-  .progress-target {
-    font-size: 13px;
-    padding: 4px 8px;
-  }
-  
-  .progress-percentage {
-    font-size: 14px;
-    padding: 6px 12px;
-    min-width: 50px;
-  }
   
   .timer-circle-mobile {
     max-width: 280px;

@@ -31,7 +31,6 @@ const LAP_LENGTH_KM = 0.4; // 400 м
 const totalKmEl = document.getElementById('totalKilometers');
 const directionTextEl = document.getElementById('directionText');
 const progressFillNewEl = document.getElementById('progressFillNew');
-const rankTextEl = document.getElementById('rankText');
 
 const timerElapsedEl = document.createElement('div');
 timerElapsedEl.className = 'timer-elapsed';
@@ -102,35 +101,16 @@ function computeRank(totalKm) {
 }
 
 function updateProgressToNextRank(currentKm) {
-  const maxKm = 220;
+  const maxKm = 220; // КМС
   const progressPercent = Math.min(100, (currentKm / maxKm) * 100);
   
   // Обновляем прогресс-бар
   progressFillNewEl.style.width = `${progressPercent.toFixed(1)}%`;
   
-  // Определяем следующий разряд
-  const rankInfo = computeRank(currentKm);
-  if (rankInfo.nextAt) {
-    rankTextEl.textContent = `До следующего разряда: ${rankInfo.kmToNext.toFixed(1)} км`;
-  } else {
-    rankTextEl.textContent = 'Достигнут максимальный разряд (КМС)';
-  }
-  
-  // Обновляем дополнительную информацию прогресса
-  const progressCurrentEl = document.getElementById('progressCurrent');
-  const progressPercentageEl = document.getElementById('progressPercentage');
-  const progressTargetEl = document.getElementById('progressTarget');
-  
-  if (progressCurrentEl) {
-    progressCurrentEl.textContent = `${currentKm.toFixed(1)} км`;
-  }
-  
-  if (progressPercentageEl) {
-    progressPercentageEl.textContent = `${progressPercent.toFixed(1)}%`;
-  }
-  
-  if (progressTargetEl) {
-    progressTargetEl.textContent = `${maxKm} км`;
+  // Обновляем процент в центре прогресс-бара
+  const progressPercentageOverlayEl = document.getElementById('progressPercentageOverlay');
+  if (progressPercentageOverlayEl) {
+    progressPercentageOverlayEl.textContent = `${progressPercent.toFixed(1)}%`;
   }
 }
 
