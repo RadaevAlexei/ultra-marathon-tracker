@@ -1,10 +1,9 @@
 // Волгоградский часовой пояс (UTC+3 круглый год)
 const VOLGOGRAD_TZ = 'Europe/Volgograd';
 function makeLocalRaceTimes() {
-  // ДЕМО РЕЖИМ LIVE: Забег начался 10 часов назад и закончится через 14 часов
-  const now = new Date();
-  const startTime = new Date(now.getTime() - 10 * 60 * 60 * 1000); // 10 часов назад
-  const endTime = new Date(now.getTime() + 14 * 60 * 60 * 1000); // 14 часов вперед
+  // ТЕСТОВОЕ ВРЕМЯ: Забег начнется 01.10.2025 в 10:00
+  const startTime = new Date('2025-10-01T10:00:00+03:00'); // 01.10.2025 10:00 (UTC+3)
+  const endTime = new Date('2025-10-02T10:00:00+03:00'); // 02.10.2025 10:00 (24 часа забега)
   
   return { start: startTime, end: endTime };
 }
