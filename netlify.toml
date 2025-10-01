@@ -5,7 +5,7 @@
 
 [build.environment]
   NODE_VERSION = "18"
-  SERVER_URL = "https://ultra-marathon-tracker.netlify.app"
+  SERVER_URL = ""
   # Настройки забега
   RACE_START_TIME = "2024-10-04T10:00:00Z"
   RACE_END_TIME = "2024-10-05T10:00:00Z"
