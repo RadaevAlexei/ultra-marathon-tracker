@@ -599,12 +599,12 @@ body {
   /* Адаптивные стили для прогресс-бара */
   .progress-bar-new {
     margin-top: 16px;
-    height: 56px;
+    height: 112px;
   }
   
   .progress-marks {
-    top: 64px;
-    height: 56px;
+    top: 120px;
+    height: 112px;
   }
   
   .mark span {
@@ -703,6 +703,10 @@ body {
   
   .failure-text p {
     font-size: 13px;
+  }
+  
+  .progress-percentage-overlay {
+    font-size: 20px;
   }
   
 }
