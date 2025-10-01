@@ -81,6 +81,7 @@ exports.handler = async (event, context) => {
       // Обновить данные
       const body = JSON.parse(event.body || '{}');
       
+      // Установить километры
       if (body.kmNumber !== undefined) {
         const currentStats = await getStats();
         const newStats = {
@@ -94,6 +95,31 @@ exports.handler = async (event, context) => {
             statusCode: 200,
             headers: { ...headers, 'Content-Type': 'application/json' },
             body: JSON.stringify({ success: true, ...newStats })
+          };
+        }
+      }
+      
+      // Установить круги (конвертировать в километры)
+      if (body.lapsNumber !== undefined) {
+        const currentStats = await getStats();
+        const laps = Number(body.lapsNumber);
+        const km = laps * 0.4; // 400 метров за круг
+        const newStats = {
+          ...currentStats,
+          total_km: Math.round(km * 100) / 100, // Округляем до 2 знаков
+          updated_at: new Date().toISOString()
+        };
+        
+        if (await saveStats(newStats)) {
+          return {
+            statusCode: 200,
+            headers: { ...headers, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              success: true, 
+              ...newStats,
+              laps: laps,
+              message: `Установлено ${laps} кругов (${km} км)`
+            })
           };
         }
       }

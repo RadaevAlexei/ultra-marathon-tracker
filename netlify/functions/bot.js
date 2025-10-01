@@ -86,6 +86,9 @@ exports.handler = async (event, context) => {
 
     // Проверка на админа
     const isAdmin = (userId) => adminIds.includes(userId);
+    
+    // Простое хранилище состояний пользователей (в реальном проекте лучше использовать БД)
+    const userStates = {};
 
     // Клавиатуры
     const userKeyboard = {
@@ -129,25 +132,45 @@ exports.handler = async (event, context) => {
           await sendMessage(chatId, '❌ У вас нет прав администратора');
         }
       } else if (isAdmin(userId) && !isNaN(parseFloat(text))) {
-        // Обработка числового ввода для добавления км/кругов
+        // Обработка числового ввода для обновления км/кругов
         const number = parseFloat(text);
         if (number > 0) {
+          const userState = userStates[userId];
+          
           try {
-            // Пытаемся добавить километры
-            const response = await fetch(`${serverUrl}/.netlify/functions/data`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ kmNumber: number })
-            });
+            let response;
+            let successMessage;
+            
+            if (userState === 'adding_laps') {
+              // Устанавливаем круги
+              response = await fetch(`${serverUrl}/.netlify/functions/data`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ lapsNumber: number })
+              });
+              successMessage = `✅ Установлено ${number} кругов!\n\nВведите следующее число или выберите действие:`;
+            } else {
+              // По умолчанию устанавливаем километры
+              response = await fetch(`${serverUrl}/.netlify/functions/data`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ kmNumber: number })
+              });
+              successMessage = `✅ Установлено ${number} км!\n\nВведите следующее число или выберите действие:`;
+            }
             
             if (response.ok) {
-              await sendMessage(chatId, `✅ Добавлено ${number} км!\n\nВведите следующее число или выберите действие:`, adminKeyboard);
+              const result = await response.json();
+              await sendMessage(chatId, successMessage, adminKeyboard);
+              
+              // Сбрасываем состояние пользователя
+              delete userStates[userId];
             } else {
-              await sendMessage(chatId, '❌ Ошибка добавления километров');
+              await sendMessage(chatId, '❌ Ошибка обновления данных');
             }
           } catch (error) {
-            console.error('Error adding kilometers:', error);
-            await sendMessage(chatId, '❌ Ошибка сервера при добавлении километров');
+            console.error('Error updating data:', error);
+            await sendMessage(chatId, '❌ Ошибка сервера при обновлении данных');
           }
         }
       }
@@ -164,6 +187,7 @@ exports.handler = async (event, context) => {
       switch (data) {
         case 'admin_add_km':
           if (isAdmin(userId)) {
+            userStates[userId] = 'adding_km';
             await sendMessage(chatId, 'Введите количество километров для добавления:', { reply_markup: { remove_keyboard: true } });
           } else {
             await sendMessage(chatId, '❌ У вас нет прав администратора');
@@ -173,8 +197,8 @@ exports.handler = async (event, context) => {
 
         case 'admin_add_laps':
           if (isAdmin(userId)) {
+            userStates[userId] = 'adding_laps';
             await sendMessage(chatId, 'Введите количество кругов для добавления:', { reply_markup: { remove_keyboard: true } });
-            // TODO: Реализовать обработку кругов
           } else {
             await sendMessage(chatId, '❌ У вас нет прав администратора');
           }
