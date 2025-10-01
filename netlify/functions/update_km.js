@@ -56,9 +56,10 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const { km } = JSON.parse(event.body || '{}');
+    const { km, kmNumber } = JSON.parse(event.body || '{}');
+    const kmValue = km || kmNumber;
     
-    if (km === undefined || isNaN(km)) {
+    if (kmValue === undefined || isNaN(kmValue)) {
       return {
         statusCode: 400,
         headers: {
@@ -69,7 +70,7 @@ exports.handler = async (event, context) => {
       };
     }
 
-    const kmNumber = Number(km);
+    const kmNumber = Number(kmValue);
     const currentStats = await getStats();
     
     // ВАЖНО: устанавливаем абсолютное значение, а не добавляем!
