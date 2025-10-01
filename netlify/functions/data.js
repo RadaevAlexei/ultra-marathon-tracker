@@ -21,6 +21,11 @@ async function getStats() {
     const data = await fs.readFile(DATA_FILE, 'utf8');
     const stats = JSON.parse(data);
     
+    // Убеждаемся что total_laps есть
+    if (stats.total_laps === undefined) {
+      stats.total_laps = Math.round(stats.total_km / 0.4);
+    }
+    
     // Обновляем кеш
     cache = stats;
     const fileStats = await fs.stat(DATA_FILE);
