@@ -142,13 +142,13 @@ exports.handler = async (event, context) => {
             let successMessage;
             
             if (userState === 'adding_laps') {
-              // Устанавливаем круги
+              // Добавляем круги
               response = await fetch(`${serverUrl}/.netlify/functions/data`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ lapsNumber: number })
               });
-              successMessage = `✅ Установлено ${number} кругов!\n\nВведите следующее число или выберите действие:`;
+              successMessage = `✅ Добавлено ${number} кругов!\n\nВведите следующее число или выберите действие:`;
             } else {
               // По умолчанию устанавливаем километры
               response = await fetch(`${serverUrl}/.netlify/functions/data`, {
