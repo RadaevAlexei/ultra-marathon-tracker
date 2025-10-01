@@ -30,6 +30,7 @@ exports.handler = async (event, context) => {
     const resetStats = {
       id: 1,
       total_km: 0.0,
+      total_laps: 0,
       updated_at: new Date().toISOString()
     };
 
@@ -44,6 +45,7 @@ exports.handler = async (event, context) => {
           success: true,
           message: 'Данные сброшены',
           total_km: 0,
+          total_laps: 0,
           updated_at: resetStats.updated_at,
         }),
       };

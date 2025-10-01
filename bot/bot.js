@@ -294,21 +294,22 @@ if (bot) {
 
       case 'admin_reset_confirm':
         try {
-          const resp = await fetch(`${SERVER_URL}/api/update_km`, {
+          const resp = await fetch(`${SERVER_URL}/api/data`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ km: 0 })
+            body: JSON.stringify({ reset: true })
           });
           const result = await resp.json();
           
           if (result.success) {
-            bot.sendMessage(chatId, '✅ Данные успешно сброшены к нулю!', adminKeyboard);
+            bot.sendMessage(chatId, '✅ Данные успешно сброшены к нулю!\n\n📊 Километры: 0\n🔄 Круги: 0', adminKeyboard);
           } else {
             bot.sendMessage(chatId, '❌ Ошибка при сбросе данных');
           }
           bot.answerCallbackQuery(callbackQuery.id);
         } catch (error) {
-          bot.sendMessage(chatId, '❌ Ошибка сервера');
+          console.error('Ошибка сброса данных:', error);
+          bot.sendMessage(chatId, '❌ Ошибка сервера при сбросе данных');
           bot.answerCallbackQuery(callbackQuery.id);
         }
         break;
@@ -421,9 +422,18 @@ if (bot) {
       const raceStart = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hour.padStart(2, '0')}:${minute}:00+03:00`);
       const raceEnd = new Date(raceStart.getTime() + 24 * 60 * 60 * 1000); // +24 часа
 
-      // Проверяем, что дата в будущем
-      if (raceStart <= new Date()) {
-        bot.sendMessage(chatId, '❌ Время забега должно быть в будущем!');
+      // Проверяем, что дата разумная (не слишком далеко в прошлом)
+      const now = new Date();
+      const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const oneYearFromNow = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
+      
+      if (raceStart < oneWeekAgo) {
+        bot.sendMessage(chatId, '❌ Время забега не может быть более чем на неделю в прошлом!');
+        return;
+      }
+      
+      if (raceStart > oneYearFromNow) {
+        bot.sendMessage(chatId, '❌ Время забега не может быть более чем на год в будущем!');
         return;
       }
 

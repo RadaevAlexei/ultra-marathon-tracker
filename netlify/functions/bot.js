@@ -156,9 +156,18 @@ exports.handler = async (event, context) => {
           const raceStart = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hour.padStart(2, '0')}:${minute}:00+03:00`);
           const raceEnd = new Date(raceStart.getTime() + 24 * 60 * 60 * 1000); // +24 часа
 
-          // Проверяем, что дата в будущем
-          if (raceStart <= new Date()) {
-            await sendMessage(chatId, '❌ Время забега должно быть в будущем!');
+          // Проверяем, что дата разумная (не слишком далеко в прошлом)
+          const now = new Date();
+          const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          const oneYearFromNow = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
+          
+          if (raceStart < oneWeekAgo) {
+            await sendMessage(chatId, '❌ Время забега не может быть более чем на неделю в прошлом!');
+            return;
+          }
+          
+          if (raceStart > oneYearFromNow) {
+            await sendMessage(chatId, '❌ Время забега не может быть более чем на год в будущем!');
             return;
           }
 
@@ -311,17 +320,39 @@ exports.handler = async (event, context) => {
 
         case 'admin_reset':
           if (isAdmin(userId)) {
-          try {
-            const response = await fetch(`${serverUrl}/.netlify/functions/data`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ reset: true })
-            });
+            await sendMessage(chatId, 
+              '⚠️ Вы уверены, что хотите сбросить все данные к нулю?',
+              {
+                reply_markup: {
+                  inline_keyboard: [
+                    [
+                      { text: '✅ Да, сбросить', callback_data: 'admin_reset_confirm' },
+                      { text: '❌ Отмена', callback_data: 'admin_cancel' }
+                    ]
+                  ]
+                }
+              }
+            );
+          } else {
+            await sendMessage(chatId, '❌ У вас нет прав администратора');
+          }
+          await answerCallbackQuery(update.callback_query.id);
+          break;
+
+        case 'admin_reset_confirm':
+          if (isAdmin(userId)) {
+            try {
+              const response = await fetch(`${serverUrl}/.netlify/functions/data`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ reset: true })
+              });
               
               if (response.ok) {
-                await sendMessage(chatId, '✅ Данные сброшены!', adminKeyboard);
+                const result = await response.json();
+                await sendMessage(chatId, '✅ Данные успешно сброшены к нулю!\n\n📊 Километры: 0\n🔄 Круги: 0', adminKeyboard);
               } else {
-                await sendMessage(chatId, '❌ Ошибка сброса данных');
+                await sendMessage(chatId, '❌ Ошибка при сбросе данных');
               }
             } catch (error) {
               console.error('Error resetting data:', error);
@@ -330,6 +361,11 @@ exports.handler = async (event, context) => {
           } else {
             await sendMessage(chatId, '❌ У вас нет прав администратора');
           }
+          await answerCallbackQuery(update.callback_query.id);
+          break;
+
+        case 'admin_cancel':
+          await sendMessage(chatId, '❌ Действие отменено', adminKeyboard);
           await answerCallbackQuery(update.callback_query.id);
           break;
 
