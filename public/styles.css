@@ -197,35 +197,79 @@ body {
 
 /* Новый прогресс-бар по разрядам */
 .progress-container {
-  margin-top: 16px;
+  margin-top: 20px;
+  padding: 20px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.1);
 }
 
 .progress-bar-new {
   position: relative;
   width: 100%;
-  height: 24px;
-  background: rgba(255,255,255,0.08);
-  border-radius: 12px;
+  height: 32px;
+  background: rgba(0,0,0,0.3);
+  border-radius: 4px;
   overflow: hidden;
-  border: 2px solid var(--stroke);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  border: 2px solid rgba(255,255,255,0.2);
+  box-shadow: 
+    0 8px 32px rgba(0,0,0,0.4),
+    inset 0 2px 4px rgba(255,255,255,0.1);
 }
 
 .progress-fill-new {
   height: 100%;
   width: 0%;
-  border-radius: 10px;
-  transition: width 0.8s cubic-bezier(.2,.8,.2,1);
-  background: linear-gradient(90deg, #00ff88, #ff6b6b);
-  box-shadow: 0 6px 18px rgba(0,255,136,0.35);
+  border-radius: 2px;
+  transition: width 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  background: linear-gradient(135deg, 
+    #667eea 0%, 
+    #764ba2 25%, 
+    #f093fb 50%, 
+    #f5576c 75%, 
+    #4facfe 100%
+  );
+  background-size: 300% 300%;
+  animation: gradientShift 3s ease infinite;
+  box-shadow: 
+    0 4px 16px rgba(102, 126, 234, 0.4),
+    inset 0 1px 2px rgba(255,255,255,0.3),
+    0 0 20px rgba(102, 126, 234, 0.3);
+  position: relative;
+}
+
+.progress-fill-new::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(255,255,255,0.2) 50%, 
+    transparent 100%
+  );
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
 .progress-marks {
   position: absolute;
-  top: 32px;
+  top: 40px;
   left: 0;
   right: 0;
-  height: 24px;
+  height: 32px;
   pointer-events: none;
   z-index: 10;
 }
@@ -239,47 +283,91 @@ body {
 .mark::before {
   content: '';
   position: absolute;
-  top: -8px;
+  top: -12px;
   left: 50%;
   transform: translateX(-50%);
-  width: 2px;
-  height: 8px;
-  background: rgba(255,255,255,0.6);
+  width: 3px;
+  height: 12px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.4) 100%);
+  border-radius: 2px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
 .mark.rank-mark::before {
-  height: 12px;
-  background: rgba(255,255,255,0.9);
-  width: 3px;
+  height: 16px;
+  width: 4px;
+  background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 3px 8px rgba(102, 126, 234, 0.4);
 }
 
 .mark span {
   position: absolute;
-  top: 8px;
+  top: 12px;
   left: 50%;
   transform: translateX(-50%);
   font-size: 11px;
-  color: var(--muted);
+  color: rgba(255,255,255,0.7);
   font-weight: 600;
   white-space: nowrap;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  background: rgba(0,0,0,0.3);
+  padding: 2px 6px;
+  border-radius: 4px;
+  backdrop-filter: blur(4px);
 }
 
 .mark.rank-mark span {
-  color: var(--text);
+  color: #fff;
   font-weight: 700;
   font-size: 12px;
+  background: rgba(102, 126, 234, 0.2);
+  border: 1px solid rgba(102, 126, 234, 0.3);
+  text-shadow: 0 1px 3px rgba(0,0,0,0.7);
 }
 
 .progress-labels {
-  margin-top: 32px;
+  margin-top: 40px;
   text-align: center;
+  padding: 16px;
+  background: rgba(255,255,255,0.02);
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.05);
 }
 
-
 .rank-text {
-  color: var(--text);
-  font-size: 13px;
+  color: #fff;
+  font-size: 14px;
   font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  margin-bottom: 8px;
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.8);
+}
+
+.progress-current {
+  font-weight: 600;
+  color: #667eea;
+}
+
+.progress-target {
+  font-weight: 600;
+  color: #f093fb;
+}
+
+.progress-percentage {
+  font-weight: 700;
+  color: #fff;
+  background: rgba(102, 126, 234, 0.2);
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(102, 126, 234, 0.3);
 }
 
 .stadium-container { display: flex; justify-content: center; }
@@ -478,6 +566,44 @@ body {
   
   .timer-container {
     padding: 10px 0;
+  }
+  
+  /* Адаптивные стили для прогресс-бара */
+  .progress-container {
+    margin-top: 16px;
+    padding: 16px;
+  }
+  
+  .progress-bar-new {
+    height: 28px;
+  }
+  
+  .progress-marks {
+    top: 36px;
+    height: 28px;
+  }
+  
+  .mark span {
+    font-size: 10px;
+    padding: 1px 4px;
+  }
+  
+  .mark.rank-mark span {
+    font-size: 11px;
+  }
+  
+  .progress-labels {
+    margin-top: 36px;
+    padding: 12px;
+  }
+  
+  .rank-text {
+    font-size: 13px;
+  }
+  
+  .progress-info {
+    font-size: 11px;
+    margin-top: 8px;
   }
   
   .timer-circle-mobile {

@@ -118,6 +118,23 @@ function updateProgressToNextRank(currentKm) {
   } else {
     rankTextEl.textContent = 'Достигнут максимальный разряд (КМС)';
   }
+  
+  // Обновляем дополнительную информацию прогресса
+  const progressCurrentEl = document.getElementById('progressCurrent');
+  const progressPercentageEl = document.getElementById('progressPercentage');
+  const progressTargetEl = document.getElementById('progressTarget');
+  
+  if (progressCurrentEl) {
+    progressCurrentEl.textContent = `${currentKm.toFixed(1)} км`;
+  }
+  
+  if (progressPercentageEl) {
+    progressPercentageEl.textContent = `${progressPercent.toFixed(1)}%`;
+  }
+  
+  if (progressTargetEl) {
+    progressTargetEl.textContent = `${maxKm} км`;
+  }
 }
 
 function updateRaceDate() {
