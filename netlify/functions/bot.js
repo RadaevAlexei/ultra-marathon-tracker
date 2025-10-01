@@ -148,7 +148,8 @@ exports.handler = async (event, context) => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ lapsNumber: number })
               });
-              successMessage = `✅ Обновлено ${number} кругов!\n\nВведите следующее число или выберите действие:`;
+              // Не используем локальное сообщение, только из API
+              successMessage = null;
             } else {
               // По умолчанию обновляем километры
               response = await fetch(`${serverUrl}/.netlify/functions/data`, {
@@ -156,14 +157,14 @@ exports.handler = async (event, context) => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ kmNumber: number })
               });
-              successMessage = `✅ Обновлено ${number} км!\n\nВведите следующее число или выберите действие:`;
+              // Не используем локальное сообщение, только из API
+              successMessage = null;
             }
             
             if (response.ok) {
               const result = await response.json();
-              // Используем сообщение из ответа API, если оно есть
-              const finalMessage = result.message || successMessage;
-              await sendMessage(chatId, finalMessage, adminKeyboard);
+              // Всегда используем сообщение из API
+              await sendMessage(chatId, result.message, adminKeyboard);
               
               // Сбрасываем состояние пользователя
               delete userStates[userId];
