@@ -3,9 +3,9 @@ const VOLGOGRAD_TZ = 'Europe/Volgograd';
 
 console.log('🚀 Mini App загружается...');
 function makeLocalRaceTimes() {
-  // РЕАЛЬНОЕ ВРЕМЯ ЗАБЕГА: 4-5 октября 2024
-  const startTime = new Date('2024-10-04T10:00:00+03:00'); // 04.10.2024 10:00 (UTC+3)
-  const endTime = new Date('2024-10-05T10:00:00+03:00'); // 05.10.2024 10:00 (24 часа забега)
+  // ВРЕМЯ ЗАБЕГА: 1-2 октября 2025, старт в 14:00
+  const startTime = new Date('2025-10-01T14:00:00+03:00'); // 01.10.2025 14:00 (UTC+3)
+  const endTime = new Date('2025-10-02T14:00:00+03:00'); // 02.10.2025 14:00 (24 часа забега)
   
   return { start: startTime, end: endTime };
 }

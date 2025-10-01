@@ -265,9 +265,9 @@ exports.handler = async (event, context) => {
               kmToNext = 180 - totalKm;
             }
             
-            // Вычисляем прошедшее время
-            const raceStart = new Date('2024-10-04T10:00:00+03:00');
-            const raceEnd = new Date('2024-10-05T10:00:00+03:00');
+          // Вычисляем прошедшее время
+          const raceStart = new Date('2025-10-01T14:00:00+03:00');
+          const raceEnd = new Date('2025-10-02T14:00:00+03:00');
             const now = new Date();
             const elapsedMs = Math.max(0, now - raceStart);
             const elapsedHours = Math.floor(elapsedMs / 3600000);
