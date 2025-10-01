@@ -32,6 +32,7 @@ async function getStats() {
     const defaultStats = {
       id: 1,
       total_km: 0.0,
+      total_laps: 0,
       updated_at: new Date().toISOString()
     };
     
@@ -89,6 +90,7 @@ exports.handler = async (event, context) => {
         const newStats = {
           ...currentStats,
           total_km: km,
+          total_laps: laps,
           updated_at: new Date().toISOString()
         };
         
@@ -99,7 +101,6 @@ exports.handler = async (event, context) => {
             body: JSON.stringify({ 
               success: true, 
               ...newStats,
-              total_laps: laps,
               message: `Обновлено ${km} км (${laps} кругов)`
             })
           };
@@ -115,6 +116,7 @@ exports.handler = async (event, context) => {
         const newStats = {
           ...currentStats,
           total_km: km,
+          total_laps: laps,
           updated_at: new Date().toISOString()
         };
         
@@ -125,7 +127,6 @@ exports.handler = async (event, context) => {
             body: JSON.stringify({ 
               success: true, 
               ...newStats,
-              total_laps: laps,
               message: `Обновлено ${laps} кругов (${km} км)`
             })
           };
@@ -136,6 +137,7 @@ exports.handler = async (event, context) => {
         const resetStats = {
           id: 1,
           total_km: 0.0,
+          total_laps: 0,
           updated_at: new Date().toISOString()
         };
         
