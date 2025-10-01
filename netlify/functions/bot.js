@@ -329,8 +329,11 @@ exports.handler = async (event, context) => {
             message += `⏱ <b>Прошло времени:</b>\n`;
             message += `   ${elapsedTime}\n\n`;
 
-            message += `⏳ <b>Осталось времени:</b>\n`;
-            message += `   ${remainingTime}\n\n`;
+            // Показываем "Осталось времени" только во время забега
+            if (now >= raceStart && now < raceEnd) {
+              message += `⏳ <b>Осталось времени:</b>\n`;
+              message += `   ${remainingTime}\n\n`;
+            }
             
             message += `📈 <b>Прогресс до КМС:</b>\n`;
             message += `   ${progressBar} ${progress.toFixed(0)}%\n\n`;
