@@ -270,6 +270,72 @@ body {
   100% { transform: translateX(100%); }
 }
 
+/* Сообщение о неудаче с КМС */
+.kms-failure-message {
+  margin-top: 20px;
+  padding: 20px;
+  background: linear-gradient(135deg, rgba(255,0,0,0.1) 0%, rgba(255,100,100,0.05) 100%);
+  border-radius: 12px;
+  border: 2px solid rgba(255,0,0,0.2);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 32px rgba(255,0,0,0.1);
+  animation: failurePulse 2s ease-in-out infinite;
+}
+
+.failure-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  text-align: left;
+}
+
+.failure-image {
+  flex-shrink: 0;
+  width: 80px;
+  height: 80px;
+  animation: gorillaShake 1.5s ease-in-out infinite;
+}
+
+.failure-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+
+.failure-text h4 {
+  color: #ff6b6b;
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.failure-text p {
+  color: rgba(255,255,255,0.9);
+  font-size: 14px;
+  margin: 4px 0;
+  line-height: 1.4;
+}
+
+@keyframes failurePulse {
+  0%, 100% { 
+    box-shadow: 0 8px 32px rgba(255,0,0,0.1);
+    border-color: rgba(255,0,0,0.2);
+  }
+  50% { 
+    box-shadow: 0 8px 32px rgba(255,0,0,0.2);
+    border-color: rgba(255,0,0,0.3);
+  }
+}
+
+@keyframes gorillaShake {
+  0%, 100% { transform: rotate(0deg) translateY(0px); }
+  25% { transform: rotate(-2deg) translateY(-2px); }
+  75% { transform: rotate(2deg) translateY(2px); }
+}
+
 .progress-marks {
   position: absolute;
   top: 40px;
@@ -612,6 +678,28 @@ body {
   
   .rank-text {
     font-size: 12px;
+  }
+  
+  .kms-failure-message {
+    margin-top: 16px;
+    padding: 16px;
+  }
+  
+  .failure-content {
+    gap: 12px;
+  }
+  
+  .failure-image {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .failure-text h4 {
+    font-size: 16px;
+  }
+  
+  .failure-text p {
+    font-size: 13px;
   }
   
 }

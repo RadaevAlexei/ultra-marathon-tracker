@@ -112,6 +112,20 @@ function updateProgressToNextRank(currentKm) {
   if (progressPercentageOverlayEl) {
     progressPercentageOverlayEl.textContent = `${progressPercent.toFixed(1)}%`;
   }
+  
+  // Проверяем, нужно ли показать сообщение о неудаче с КМС
+  const kmsFailureMessageEl = document.getElementById('kmsFailureMessage');
+  if (kmsFailureMessageEl && RACE_END) {
+    const now = new Date();
+    const isRaceFinished = now > RACE_END;
+    const isKMSNotAchieved = currentKm < maxKm;
+    
+    if (isRaceFinished && isKMSNotAchieved) {
+      kmsFailureMessageEl.style.display = 'block';
+    } else {
+      kmsFailureMessageEl.style.display = 'none';
+    }
+  }
 }
 
 function updateRaceDate() {
