@@ -70,13 +70,13 @@ exports.handler = async (event, context) => {
       };
     }
 
-    const kmNumber = Number(kmValue);
+    const kmValueNumber = Number(kmValue);
     const currentStats = await getStats();
     
     // ВАЖНО: устанавливаем абсолютное значение, а не добавляем!
     const newStats = {
       ...currentStats,
-      total_km: kmNumber,
+      total_km: kmValueNumber,
       updated_at: new Date().toISOString(),
     };
 
