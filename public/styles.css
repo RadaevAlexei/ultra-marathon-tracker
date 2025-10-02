@@ -599,21 +599,35 @@ body {
   /* Адаптивные стили для прогресс-бара */
   .progress-bar-new {
     margin-top: 16px;
-    height: 2400px;
+    height: 80px;
+    background: rgba(40, 40, 45, 0.95);
+    border: 2px solid rgba(200, 200, 200, 0.3);
+    border-radius: 8px;
+    box-shadow: 
+      0 4px 16px rgba(0,0,0,0.6),
+      inset 0 1px 2px rgba(255,255,255,0.05);
+  }
+  
+  .progress-fill-new {
+    background: linear-gradient(
+      90deg,
+      rgba(0, 150, 255, 0.8) 0%,
+      rgba(100, 200, 255, 0.9) 50%,
+      rgba(0, 150, 255, 0.8) 100%
+    );
+    border-radius: 6px;
   }
   
   .progress-marks {
-    top: 2408px;
-    height: 2400px;
+    display: none;
   }
   
   .mark span {
-    font-size: 10px;
-    padding: 1px 4px;
+    display: none;
   }
   
   .mark.rank-mark span {
-    font-size: 11px;
+    display: none;
   }
   
   
@@ -706,7 +720,10 @@ body {
   }
   
   .progress-percentage-overlay {
-    font-size: 20px;
+    font-size: 24px;
+    font-weight: 700;
+    color: #ffffff;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
   }
   
 }
