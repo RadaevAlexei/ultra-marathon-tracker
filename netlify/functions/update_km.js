@@ -41,12 +41,13 @@ exports.handler = async (event, context) => {
     }
 
     const kmValueNumber = Number(kmValue);
-    const currentStats = await getStats();
+    const totalLaps = Math.round(kmValueNumber / 0.4);
     
     // ВАЖНО: устанавливаем абсолютное значение, а не добавляем!
     const newStats = {
-      ...currentStats,
+      id: 1,
       total_km: kmValueNumber,
+      total_laps: totalLaps,
       updated_at: new Date().toISOString(),
     };
 
@@ -60,6 +61,7 @@ exports.handler = async (event, context) => {
         body: JSON.stringify({
           success: true,
           total_km: newStats.total_km,
+          total_laps: newStats.total_laps,
           updated_at: newStats.updated_at,
         }),
       };

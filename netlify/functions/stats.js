@@ -29,6 +29,7 @@ exports.handler = async (event, context) => {
         },
         body: JSON.stringify({ 
           total_km: stats.total_km, 
+          total_laps: stats.total_laps || Math.round(stats.total_km / 0.4),
           updated_at: stats.updated_at 
         }),
       };
@@ -50,10 +51,11 @@ exports.handler = async (event, context) => {
       }
 
       const kmNumber = Number(km);
-      const currentStats = await getStats();
+      const totalLaps = Math.round(kmNumber / 0.4);
       const newStats = {
-        ...currentStats,
-        total_km: currentStats.total_km + kmNumber,
+        id: 1,
+        total_km: kmNumber,
+        total_laps: totalLaps,
         updated_at: new Date().toISOString(),
       };
 
@@ -67,6 +69,7 @@ exports.handler = async (event, context) => {
           body: JSON.stringify({
             success: true,
             total_km: newStats.total_km,
+            total_laps: newStats.total_laps,
             updated_at: newStats.updated_at,
           }),
         };

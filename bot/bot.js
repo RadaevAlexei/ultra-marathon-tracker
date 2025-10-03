@@ -5,6 +5,17 @@ const fetch = require('node-fetch');
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const SERVER_URL = process.env.SERVER_URL || 'http://localhost:' + (process.env.PORT || 3000);
 
+// Функция для получения правильного API URL
+function getApiUrl(endpoint) {
+  if (SERVER_URL.includes('netlify.app')) {
+    // На продакшене используем Netlify функции
+    return `${SERVER_URL}/.netlify/functions/${endpoint}`;
+  } else {
+    // На локальной разработке используем обычные API endpoints
+    return `${SERVER_URL}/api/${endpoint}`;
+  }
+}
+
 // ID администраторов (добавьте свой Telegram ID)
 const ADMIN_IDS = process.env.ADMIN_IDS ? process.env.ADMIN_IDS.split(',').map(id => parseInt(id.trim())) : [];
 
@@ -116,8 +127,8 @@ if (bot) {
         try {
           // Получаем статистику и время забега
           const [statsResp, raceTimeResp] = await Promise.all([
-            fetch(`${SERVER_URL}/api/stats`),
-            fetch(`${SERVER_URL}/api/set_race_time`)
+            fetch(getApiUrl('data')),
+            fetch(getApiUrl('set_race_time'))
           ]);
           
           const stats = await statsResp.json();
@@ -157,7 +168,7 @@ if (bot) {
           // Получаем время забега с сервера
           let raceStart, raceEnd;
           try {
-            const raceTimeResp = await fetch(`${SERVER_URL}/api/set_race_time`);
+            const raceTimeResp = await fetch(getApiUrl('set_race_time'));
             if (raceTimeResp.ok) {
               const raceTime = await raceTimeResp.json();
               raceStart = new Date(raceTime.race_start);
@@ -223,8 +234,8 @@ if (bot) {
         try {
           // Получаем статистику и время забега
           const [statsResp, raceTimeResp] = await Promise.all([
-            fetch(`${SERVER_URL}/api/stats`),
-            fetch(`${SERVER_URL}/api/set_race_time`)
+            fetch(getApiUrl('data')),
+            fetch(getApiUrl('set_race_time'))
           ]);
           
           const stats = await statsResp.json();
@@ -264,7 +275,7 @@ if (bot) {
           // Получаем время забега с сервера
           let raceStart, raceEnd;
           try {
-            const raceTimeResp = await fetch(`${SERVER_URL}/api/set_race_time`);
+            const raceTimeResp = await fetch(getApiUrl('set_race_time'));
             if (raceTimeResp.ok) {
               const raceTime = await raceTimeResp.json();
               raceStart = new Date(raceTime.race_start);
@@ -396,7 +407,7 @@ if (bot) {
 
       case 'admin_reset_confirm':
         try {
-          const resp = await fetch(`${SERVER_URL}/api/reset`, {
+          const resp = await fetch(getApiUrl('reset'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
           });
@@ -448,7 +459,7 @@ if (bot) {
       }
 
       try {
-        const resp = await fetch(`${SERVER_URL}/api/update_km`, {
+        const resp = await fetch(getApiUrl('update_km'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ km: km })
