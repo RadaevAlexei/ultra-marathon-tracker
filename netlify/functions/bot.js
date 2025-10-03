@@ -87,8 +87,31 @@ exports.handler = async (event, context) => {
     // Проверка на админа
     const isAdmin = (userId) => adminIds.includes(userId);
     
-    // Простое хранилище состояний пользователей (в реальном проекте лучше использовать БД)
-    const userStates = {};
+    // Хранилище состояний пользователей в файловой системе
+    const fs = require('fs').promises;
+    const path = require('path');
+    const STATES_FILE = '/tmp/user_states.json';
+    
+    async function getUserStates() {
+      try {
+        const data = await fs.readFile(STATES_FILE, 'utf8');
+        return JSON.parse(data);
+      } catch (error) {
+        return {};
+      }
+    }
+    
+    async function saveUserStates(states) {
+      try {
+        await fs.writeFile(STATES_FILE, JSON.stringify(states, null, 2));
+        return true;
+      } catch (error) {
+        console.error('Ошибка сохранения состояний:', error);
+        return false;
+      }
+    }
+    
+    const userStates = await getUserStates();
 
     // Клавиатуры
     const userKeyboard = {
@@ -216,6 +239,7 @@ exports.handler = async (event, context) => {
             await sendMessage(chatId, '❌ Ошибка сервера при установке времени');
           } finally {
             delete userStates[userId];
+            await saveUserStates(userStates);
           }
         } else if (!isNaN(parseFloat(text))) {
           // Обработка числового ввода для обновления км/кругов
@@ -238,8 +262,8 @@ exports.handler = async (event, context) => {
                 });
                 // Не используем локальное сообщение, только из API
                 successMessage = null;
-              } else {
-                // По умолчанию обновляем километры
+              } else if (userState === 'adding_km') {
+                // Обновляем километры
                 console.log(`🔄 Отправляем километры: ${number}`);
                 const requestBody = { kmNumber: number };
                 console.log(`📤 Request body:`, requestBody);
@@ -251,6 +275,11 @@ exports.handler = async (event, context) => {
                 });
                 // Не используем локальное сообщение, только из API
                 successMessage = null;
+              } else {
+                // Если состояние не определено, игнорируем
+                console.log(`⚠️ Неопределенное состояние пользователя: ${userState}`);
+                await sendMessage(chatId, '❌ Пожалуйста, выберите действие из меню');
+                return;
               }
               
               if (response.ok) {
@@ -260,6 +289,7 @@ exports.handler = async (event, context) => {
                 
                 // Сбрасываем состояние пользователя
                 delete userStates[userId];
+                await saveUserStates(userStates);
               } else {
                 await sendMessage(chatId, '❌ Ошибка обновления данных');
               }
@@ -284,6 +314,7 @@ exports.handler = async (event, context) => {
         case 'admin_add_km':
           if (isAdmin(userId)) {
             userStates[userId] = 'adding_km';
+            await saveUserStates(userStates);
             await sendMessage(chatId, 'Введите количество километров для обновления:', { reply_markup: { remove_keyboard: true } });
           } else {
             await sendMessage(chatId, '❌ У вас нет прав администратора');
@@ -294,6 +325,7 @@ exports.handler = async (event, context) => {
         case 'admin_add_laps':
           if (isAdmin(userId)) {
             userStates[userId] = 'adding_laps';
+            await saveUserStates(userStates);
             await sendMessage(chatId, 'Введите количество кругов для обновления:', { reply_markup: { remove_keyboard: true } });
           } else {
             await sendMessage(chatId, '❌ У вас нет прав администратора');
@@ -304,6 +336,7 @@ exports.handler = async (event, context) => {
         case 'admin_set_race_time':
           if (isAdmin(userId)) {
             userStates[userId] = 'setting_race_time';
+            await saveUserStates(userStates);
             await sendMessage(chatId, 
               '⏰ Введите дату и время начала забега в формате:\n\n' +
               '📅 <b>Дата:</b> ДД.ММ.ГГГГ (например: 01.10.2025)\n' +
