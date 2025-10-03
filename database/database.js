@@ -83,8 +83,8 @@ class Database {
         return;
       }
       if (row.count === 0) {
-        const defaultStart = '2025-10-01T14:00:00+03:00';
-        const defaultEnd = '2025-10-02T14:00:00+03:00';
+        const defaultStart = '2025-10-04T10:00:00+03:00';
+        const defaultEnd = '2025-10-05T10:00:00+03:00';
         const insertInitial = 'INSERT INTO race_time (race_start, race_end) VALUES (?, ?)';
         this.db.run(insertInitial, [defaultStart, defaultEnd], (err) => {
           if (err) {
@@ -177,6 +177,30 @@ class Database {
           race_start: raceStart,
           race_end: raceEnd,
           updated_at: new Date().toISOString()
+        });
+      });
+    });
+  }
+
+  resetStats() {
+    return new Promise((resolve, reject) => {
+      const updateSql = `
+        UPDATE run_stats
+        SET total_km = 0.0,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = (SELECT id FROM run_stats ORDER BY id DESC LIMIT 1)
+      `;
+      this.db.run(updateSql, (err) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        resolve({
+          success: true,
+          total_km: 0.0,
+          total_laps: 0,
+          updated_at: new Date().toISOString(),
+          message: 'Данные сброшены'
         });
       });
     });

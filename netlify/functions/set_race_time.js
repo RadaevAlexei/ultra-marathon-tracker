@@ -11,8 +11,8 @@ async function getRaceTime() {
   } catch (error) {
     // Если файл не существует, возвращаем время по умолчанию
     const defaultTime = {
-      race_start: '2025-10-01T14:00:00+03:00',
-      race_end: '2025-10-02T14:00:00+03:00',
+      race_start: '2025-10-04T10:00:00+03:00',
+      race_end: '2025-10-05T10:00:00+03:00',
       updated_at: new Date().toISOString()
     };
     

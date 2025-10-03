@@ -81,6 +81,17 @@ app.post('/api/add_laps', async (req, res) => {
   }
 });
 
+// Endpoint для сброса данных
+app.post('/api/reset', async (req, res) => {
+  try {
+    const result = await database.resetStats();
+    res.json(result);
+  } catch (error) {
+    console.error('Ошибка сброса данных:', error);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
 // Endpoint для установки времени забега
 app.get('/api/set_race_time', async (req, res) => {
   try {
