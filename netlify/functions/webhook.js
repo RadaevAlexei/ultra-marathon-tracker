@@ -93,14 +93,10 @@ exports.handler = async (event, context) => {
         inline_keyboard: [
           [
             { text: '🔄 Обновление км', callback_data: 'admin_add_km' },
-            { text: '🔄 Обновление кругов', callback_data: 'admin_add_laps' }
+            { text: '🔄 Сбросить данные', callback_data: 'admin_reset' }
           ],
           [
-            { text: '🔄 Сбросить данные', callback_data: 'admin_reset' },
             { text: '📈 Статистика', callback_data: 'admin_stats' }
-          ],
-          [
-            { text: '⏰ Установить время забега', callback_data: 'admin_set_race_time' }
           ]
         ]
       }
@@ -166,14 +162,6 @@ exports.handler = async (event, context) => {
           await answerCallbackQuery(update.callback_query.id);
           break;
 
-        case 'admin_add_laps':
-          if (isAdmin(userId)) {
-            await sendMessage(chatId, 'Введите количество кругов для обновления:', { reply_markup: { remove_keyboard: true } });
-          } else {
-            await sendMessage(chatId, '❌ У вас нет прав администратора');
-          }
-          await answerCallbackQuery(update.callback_query.id);
-          break;
 
         case 'admin_reset':
           if (isAdmin(userId)) {
@@ -202,6 +190,7 @@ exports.handler = async (event, context) => {
 
         case 'admin_stats':
           try {
+            // Получаем статистику и время забега
             const [statsResp, raceTimeResp] = await Promise.all([
               fetch(`${serverUrl}/.netlify/functions/data`),
               fetch(`${serverUrl}/.netlify/functions/set_race_time`)
@@ -241,9 +230,80 @@ exports.handler = async (event, context) => {
               kmToNext = 180 - totalKm;
             }
             
+            // Получаем время забега с сервера
+            let raceStart, raceEnd;
+            try {
+              const raceTimeResp = await fetch(`${serverUrl}/.netlify/functions/set_race_time`);
+              if (raceTimeResp.ok) {
+                const raceTime = await raceTimeResp.json();
+                raceStart = new Date(raceTime.race_start);
+                raceEnd = new Date(raceTime.race_end);
+              } else {
+                // Используем время по умолчанию
+                raceStart = new Date('2025-10-01T14:00:00+03:00');
+                raceEnd = new Date('2025-10-02T14:00:00+03:00');
+              }
+            } catch (error) {
+              console.error('Ошибка получения времени забега:', error);
+              raceStart = new Date('2025-10-01T14:00:00+03:00');
+              raceEnd = new Date('2025-10-02T14:00:00+03:00');
+            }
+
+            const now = new Date();
+            const elapsedMs = Math.max(0, now - raceStart);
+            const elapsedHours = Math.floor(elapsedMs / 3600000);
+            const elapsedMinutes = Math.floor((elapsedMs % 3600000) / 60000);
+            const elapsedTime = elapsedHours > 0 
+              ? `${elapsedHours} ч ${elapsedMinutes} мин`
+              : elapsedHours === 0 && now >= raceStart
+                ? `${elapsedMinutes} мин`
+                : 'Не начался';
+
+            // Вычисляем оставшееся время
+            const remainingMs = Math.max(0, raceEnd - now);
+            const remainingHours = Math.floor(remainingMs / 3600000);
+            const remainingMinutes = Math.floor((remainingMs % 3600000) / 60000);
+            const remainingTime = now >= raceEnd
+              ? 'Завершен'
+              : now < raceStart
+                ? 'Не начался'
+                : `${remainingHours} ч ${remainingMinutes} мин`;
+              
+            // Форматируем дату обновления
+            const updateDate = new Date(stats.updated_at);
+            const dateStr = updateDate.toLocaleString('ru-RU', {
+              timeZone: 'Europe/Volgograd',
+              day: '2-digit',
+              month: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit'
+            });
+            
+            // Прогресс-бар
+            const maxKm = 220;
+            const progress = Math.min(100, (totalKm / maxKm) * 100);
+            const barLength = 10;
+            const filledBars = Math.round((progress / 100) * barLength);
+            const progressBar = '▓'.repeat(filledBars) + '░'.repeat(barLength - filledBars);
+            
+            // Форматируем дату старта забега
+            const raceStartDate = new Date(raceTime.race_start);
+            const raceStartStr = raceStartDate.toLocaleDateString('ru-RU', {
+              timeZone: 'Europe/Volgograd',
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            });
+            
             // Красивое сообщение
             let message = `📊 <b>СТАТИСТИКА ЗАБЕГА</b>\n`;
             message += `━━━━━━━━━━━━━━━━\n\n`;
+            
+            message += `🏁 <b>Дата старта забега:</b>\n`;
+            message += `   ${raceStartStr}\n\n`;
             
             message += `🏃‍♂️ <b>Километры:</b>\n`;
             message += `   ${totalKm.toFixed(2)} км\n\n`;
@@ -261,7 +321,20 @@ exports.handler = async (event, context) => {
               message += `🏆 <b>Максимальный разряд!</b>\n\n`;
             }
             
-            message += `━━━━━━━━━━━━━━━━`;
+            message += `⏱ <b>Прошло времени:</b>\n`;
+            message += `   ${elapsedTime}\n\n`;
+
+            // Показываем "Осталось времени" только во время забега
+            if (now >= raceStart && now < raceEnd) {
+              message += `⏳ <b>Осталось времени:</b>\n`;
+              message += `   ${remainingTime}\n\n`;
+            }
+            
+            message += `📈 <b>Прогресс до КМС:</b>\n`;
+            message += `   ${progressBar} ${progress.toFixed(0)}%\n\n`;
+            
+            message += `━━━━━━━━━━━━━━━━\n`;
+            message += `🕐 Обновлено: ${dateStr}`;
             
             const keyboard = isAdmin(userId) ? adminKeyboard : userKeyboard;
             await sendMessage(chatId, message, keyboard);
