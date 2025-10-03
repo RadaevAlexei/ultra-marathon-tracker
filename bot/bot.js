@@ -407,9 +407,10 @@ if (bot) {
 
       case 'admin_reset_confirm':
         try {
-          const resp = await fetch(getApiUrl('reset'), {
+          const resp = await fetch(getApiUrl('data'), {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ reset: true })
           });
           const result = await resp.json();
           
@@ -458,13 +459,13 @@ if (bot) {
         return;
       }
 
-      try {
-        const resp = await fetch(getApiUrl('update_km'), {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ km: km })
-        });
-        const result = await resp.json();
+        try {
+          const resp = await fetch(getApiUrl('data'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ kmNumber: km })
+          });
+          const result = await resp.json();
 
         if (result.success) {
           const totalKm = Number(result.total_km || 0);

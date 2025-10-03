@@ -28,6 +28,7 @@ function getDefaultStats() {
   return {
     id: 1,
     total_km: 0.0,
+    total_laps: 0,
     updated_at: new Date().toISOString()
   };
 }

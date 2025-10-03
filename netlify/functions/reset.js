@@ -1,4 +1,27 @@
-const { saveStats } = require('./storage_fs');
+// Используем ту же систему хранения, что и в data.js
+const fs = require('fs').promises;
+const path = require('path');
+
+const DATA_FILE = '/tmp/run_stats.json';
+
+let cache = null;
+let lastModified = null;
+
+async function saveStats(stats) {
+  try {
+    await fs.writeFile(DATA_FILE, JSON.stringify(stats, null, 2));
+    
+    // Обновляем кеш
+    cache = stats;
+    const fileStats = await fs.stat(DATA_FILE);
+    lastModified = fileStats.mtime.getTime();
+    
+    return true;
+  } catch (error) {
+    console.error('Ошибка сохранения данных:', error);
+    return false;
+  }
+}
 
 exports.handler = async (event, context) => {
   // Настройка CORS
