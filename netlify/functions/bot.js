@@ -31,6 +31,9 @@ exports.handler = async (event, context) => {
       return { statusCode: 200, headers, body: 'OK' };
     }
 
+    // Загружаем состояния пользователей
+    userStates = await getUserStates();
+
     const botToken = process.env.TELEGRAM_BOT_TOKEN;
     const serverUrl = process.env.SERVER_URL || 'https://ultra-marathon-tracker.netlify.app';
     const adminIds = process.env.ADMIN_IDS ? process.env.ADMIN_IDS.split(',').map(id => parseInt(id.trim())) : [];
@@ -111,7 +114,7 @@ exports.handler = async (event, context) => {
       }
     }
     
-    const userStates = await getUserStates();
+    let userStates = {};
 
     // Клавиатуры
     const userKeyboard = {
