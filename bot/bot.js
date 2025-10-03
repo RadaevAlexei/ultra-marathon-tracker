@@ -29,7 +29,8 @@ function isAdmin(userId) {
 const userKeyboard = {
   reply_markup: {
     inline_keyboard: [
-      [{ text: '📊 Открыть приложение', web_app: { url: SERVER_URL } }]
+      [{ text: '📊 Открыть приложение', web_app: { url: SERVER_URL } }],
+      [{ text: '📈 Статистика', callback_data: 'user_stats' }]
     ]
   }
 };
@@ -40,14 +41,10 @@ const adminKeyboard = {
     inline_keyboard: [
       [
         { text: '➕ Добавить км', callback_data: 'admin_add_km' },
-        { text: '➕ Добавить круги', callback_data: 'admin_add_laps' }
+        { text: '🔄 Сбросить данные', callback_data: 'admin_reset' }
       ],
       [
-        { text: '🔄 Сбросить данные', callback_data: 'admin_reset' },
         { text: '📈 Статистика', callback_data: 'admin_stats' }
-      ],
-      [
-        { text: '⏰ Установить время забега', callback_data: 'admin_set_race_time' }
       ]
     ]
   }
@@ -69,7 +66,6 @@ if (bot) {
         `🎯 Доступные действия:\n` +
         `• Открыть Mini App для просмотра\n` +
         `• Добавить километры\n` +
-        `• Добавить круги\n` +
         `• Сбросить данные\n` +
         `• Просмотр статистики`,
         adminKeyboard
@@ -79,7 +75,10 @@ if (bot) {
         msg.chat.id,
         `👋 Привет, ${userName}!\n\n` +
         `Добро пожаловать в трекер суточного забега Шри Чинмоя.\n\n` +
-        `Нажмите кнопку ниже, чтобы открыть приложение! 🏃‍♂️`,
+        `🎯 Доступные действия:\n` +
+        `• Открыть приложение для просмотра\n` +
+        `• Просмотр статистики забега\n\n` +
+        `Выберите действие ниже! 🏃‍♂️`,
         userKeyboard
       );
     }
@@ -112,30 +111,113 @@ if (bot) {
     }
 
     switch (data) {
+      case 'user_stats':
+        // Статистика доступна всем пользователям
+        try {
+          // Получаем статистику и время забега
+          const [statsResp, raceTimeResp] = await Promise.all([
+            fetch(`${SERVER_URL}/api/stats`),
+            fetch(`${SERVER_URL}/api/set_race_time`)
+          ]);
+          
+          const stats = await statsResp.json();
+          const raceTime = await raceTimeResp.json();
+          
+          const totalKm = Number(stats.total_km || 0);
+          const totalLaps = Math.round(totalKm / 0.4);
+          
+          // Вычисляем разряд
+          let rank = '-';
+          let rankEmoji = '⚪️';
+          let nextRank = 160;
+          let kmToNext = 160 - totalKm;
+          
+          if (totalKm >= 220) {
+            rank = 'КМС';
+            rankEmoji = '🏆';
+            nextRank = null;
+            kmToNext = 0;
+          } else if (totalKm >= 200) {
+            rank = '1-й';
+            rankEmoji = '🔴';
+            nextRank = 220;
+            kmToNext = 220 - totalKm;
+          } else if (totalKm >= 180) {
+            rank = '2-й';
+            rankEmoji = '🟡';
+            nextRank = 200;
+            kmToNext = 200 - totalKm;
+          } else if (totalKm >= 160) {
+            rank = '3-й';
+            rankEmoji = '🟢';
+            nextRank = 180;
+            kmToNext = 180 - totalKm;
+          }
+          
+          // Получаем время забега с сервера
+          let raceStart, raceEnd;
+          try {
+            const raceTimeResp = await fetch(`${SERVER_URL}/api/set_race_time`);
+            if (raceTimeResp.ok) {
+              const raceTime = await raceTimeResp.json();
+              raceStart = new Date(raceTime.race_start);
+              raceEnd = new Date(raceTime.race_end);
+            }
+          } catch (error) {
+            console.error('Ошибка получения времени забега:', error);
+          }
+          
+          // Форматируем время забега
+          let raceTimeStr = '';
+          if (raceStart && raceEnd) {
+            const startStr = raceStart.toLocaleString('ru-RU', {
+              timeZone: 'Europe/Volgograd',
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            });
+            
+            const endStr = raceEnd.toLocaleString('ru-RU', {
+              timeZone: 'Europe/Volgograd',
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            });
+            
+            raceTimeStr = `\n⏰ <b>Время забега:</b>\n` +
+                         `🏁 Старт: ${startStr}\n` +
+                         `🏆 Финиш: ${endStr}`;
+          }
+          
+          const statsMessage = `📊 <b>Текущая статистика забега</b>\n\n` +
+                              `🏃‍♂️ <b>Пробежано:</b> ${totalKm.toFixed(2)} км\n` +
+                              `🔄 <b>Кругов:</b> ${totalLaps}\n` +
+                              `🏅 <b>Разряд:</b> ${rankEmoji} ${rank}\n` +
+                              (nextRank ? `📈 <b>До следующего разряда:</b> ${kmToNext.toFixed(2)} км\n` : '') +
+                              raceTimeStr;
+          
+          bot.sendMessage(
+            chatId,
+            statsMessage,
+            { parse_mode: 'HTML' }
+          );
+        } catch (error) {
+          console.error('Ошибка получения статистики:', error);
+          bot.sendMessage(chatId, '❌ Ошибка получения статистики');
+        }
+        bot.answerCallbackQuery(callbackQuery.id);
+        break;
+
       case 'admin_add_km':
         chatState.set(chatId, { action: 'waiting_km' });
         bot.sendMessage(chatId, '📝 Введите количество километров для добавления (например: 5.2):');
         bot.answerCallbackQuery(callbackQuery.id);
         break;
 
-      case 'admin_add_laps':
-        chatState.set(chatId, { action: 'waiting_laps' });
-        bot.sendMessage(chatId, '📝 Введите количество кругов для добавления (например: 10):');
-        bot.answerCallbackQuery(callbackQuery.id);
-        break;
-
-      case 'admin_set_race_time':
-        chatState.set(chatId, { action: 'waiting_race_time' });
-        bot.sendMessage(chatId, 
-          '⏰ Введите дату и время начала забега в формате:\n\n' +
-          '📅 <b>Дата:</b> ДД.ММ.ГГГГ (например: 01.10.2025)\n' +
-          '🕐 <b>Время:</b> ЧЧ:ММ (например: 14:00)\n\n' +
-          'Пример: <code>01.10.2025 14:00</code>\n\n' +
-          'Забег будет длиться 24 часа с указанного времени.',
-          { parse_mode: 'HTML' }
-        );
-        bot.answerCallbackQuery(callbackQuery.id);
-        break;
 
       case 'admin_stats':
         try {
@@ -389,117 +471,6 @@ if (bot) {
         }
       } catch (error) {
         bot.sendMessage(chatId, '❌ Ошибка сервера');
-      } finally {
-        chatState.delete(chatId);
-      }
-    } else if (state.action === 'waiting_laps') {
-      const laps = parseInt(text);
-      
-      if (!Number.isInteger(laps) || laps < 0) {
-        bot.sendMessage(chatId, '❌ Введите целое число кругов (например, 10)');
-        return;
-      }
-
-      try {
-        const resp = await fetch(`${SERVER_URL}/api/add_laps`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ laps })
-        });
-        const result = await resp.json();
-
-        if (result.success) {
-          const addedKm = laps * 0.4;
-          bot.sendMessage(
-            chatId,
-            `✅ Добавлено ${laps} кругов (${addedKm.toFixed(2)} км)\n\n` +
-            `📊 Текущий километраж: ${result.total_km.toFixed(2)} км`,
-            adminKeyboard
-          );
-        }
-      } catch (error) {
-        bot.sendMessage(chatId, '❌ Ошибка сервера');
-      } finally {
-        chatState.delete(chatId);
-      }
-    } else if (state.action === 'waiting_race_time') {
-      // Парсим дату и время в формате "ДД.ММ.ГГГГ ЧЧ:ММ"
-      const timeRegex = /^(\d{1,2})\.(\d{1,2})\.(\d{4})\s+(\d{1,2}):(\d{2})$/;
-      const match = text.match(timeRegex);
-      
-      if (!match) {
-        bot.sendMessage(chatId, 
-          '❌ Неверный формат даты и времени!\n\n' +
-          'Используйте формат: <code>ДД.ММ.ГГГГ ЧЧ:ММ</code>\n' +
-          'Пример: <code>01.10.2025 14:00</code>',
-          { parse_mode: 'HTML' }
-        );
-        return;
-      }
-
-      const [, day, month, year, hour, minute] = match;
-      const raceStart = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hour.padStart(2, '0')}:${minute}:00+03:00`);
-      const raceEnd = new Date(raceStart.getTime() + 24 * 60 * 60 * 1000); // +24 часа
-
-      // Проверяем, что дата разумная (не слишком далеко в прошлом)
-      const now = new Date();
-      const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      const oneYearFromNow = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
-      
-      if (raceStart < oneWeekAgo) {
-        bot.sendMessage(chatId, '❌ Время забега не может быть более чем на неделю в прошлом!');
-        return;
-      }
-      
-      if (raceStart > oneYearFromNow) {
-        bot.sendMessage(chatId, '❌ Время забега не может быть более чем на год в будущем!');
-        return;
-      }
-
-      try {
-        const resp = await fetch(`${SERVER_URL}/api/set_race_time`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            race_start: raceStart.toISOString(),
-            race_end: raceEnd.toISOString()
-          })
-        });
-        const result = await resp.json();
-
-        if (result.success) {
-          const startStr = raceStart.toLocaleString('ru-RU', {
-            timeZone: 'Europe/Volgograd',
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-          });
-          
-          const endStr = raceEnd.toLocaleString('ru-RU', {
-            timeZone: 'Europe/Volgograd',
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-          });
-
-          bot.sendMessage(
-            chatId,
-            `✅ Время забега успешно установлено!\n\n` +
-            `🏁 <b>Старт:</b> ${startStr}\n` +
-            `🏆 <b>Финиш:</b> ${endStr}\n\n` +
-            `⏱ Длительность: 24 часа`,
-            { parse_mode: 'HTML', ...adminKeyboard }
-          );
-        } else {
-          bot.sendMessage(chatId, '❌ Ошибка при установке времени забега');
-        }
-      } catch (error) {
-        console.error('Ошибка установки времени забега:', error);
-        bot.sendMessage(chatId, '❌ Ошибка сервера при установке времени');
       } finally {
         chatState.delete(chatId);
       }
