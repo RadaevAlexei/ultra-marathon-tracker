@@ -2,7 +2,7 @@ const fetch = require('node-fetch');
 require('dotenv').config();
 
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const WEBHOOK_URL = 'https://ultra-marathon-tracker.netlify.app/.netlify/functions/bot';
+const WEBHOOK_URL = 'https://ultra-marathon-tracker.netlify.app/.netlify/functions/webhook';
 
 async function setupWebhook() {
   if (!TOKEN) {
