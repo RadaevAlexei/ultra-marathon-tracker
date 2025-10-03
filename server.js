@@ -21,7 +21,11 @@ database.init();
 app.get('/api/stats', async (req, res) => {
   try {
     const stats = await database.getStats();
-    res.json({ total_km: stats.total_km, updated_at: stats.updated_at });
+    res.json({ 
+      total_km: stats.total_km, 
+      total_laps: stats.total_laps,
+      updated_at: stats.updated_at 
+    });
   } catch (error) {
     console.error('Ошибка получения статистики:', error);
     res.status(500).json({ error: 'Ошибка сервера' });
@@ -39,6 +43,32 @@ app.post('/api/update_km', async (req, res) => {
     res.json(result);
   } catch (error) {
     console.error('Ошибка обновления километража:', error);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
+// Endpoint для добавления километров (не установки абсолютного значения)
+app.post('/api/add_km', async (req, res) => {
+  try {
+    const { km } = req.body;
+    if (km === undefined || isNaN(km)) {
+      return res.status(400).json({ error: 'Некорректные данные' });
+    }
+    
+    // Получаем текущие километры
+    const currentStats = await database.getStats();
+    const currentKm = Number(currentStats.total_km || 0);
+    const newKm = currentKm + Number(km);
+    
+    const result = await database.updateKm(newKm);
+    res.json({
+      success: true,
+      added_km: Number(km),
+      total_km: result.total_km,
+      updated_at: result.updated_at
+    });
+  } catch (error) {
+    console.error('Ошибка добавления километров:', error);
     res.status(500).json({ error: 'Ошибка сервера' });
   }
 });

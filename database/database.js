@@ -23,6 +23,7 @@ class Database {
       CREATE TABLE IF NOT EXISTS run_stats (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         total_km REAL DEFAULT 0.0,
+        total_laps INTEGER DEFAULT 0,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `;
@@ -41,6 +42,7 @@ class Database {
         console.error('Ошибка создания таблицы run_stats:', err.message);
       } else {
         console.log('✅ Таблица run_stats готова');
+        this.migrateRunStats();
         this.initializeRunStats();
       }
     });
@@ -51,6 +53,32 @@ class Database {
       } else {
         console.log('✅ Таблица race_time готова');
         this.initializeRaceTime();
+      }
+    });
+  }
+
+  migrateRunStats() {
+    // Добавляем поле total_laps если его нет
+    const addColumn = 'ALTER TABLE run_stats ADD COLUMN total_laps INTEGER DEFAULT 0';
+    this.db.run(addColumn, (err) => {
+      if (err && !err.message.includes('duplicate column name')) {
+        console.error('Ошибка добавления поля total_laps:', err.message);
+      } else if (!err) {
+        console.log('✅ Поле total_laps добавлено');
+        // Обновляем существующие записи
+        this.updateLapsFromKm();
+      }
+    });
+  }
+
+  updateLapsFromKm() {
+    // Обновляем total_laps на основе total_km для существующих записей
+    const updateLaps = 'UPDATE run_stats SET total_laps = ROUND(total_km / 0.4) WHERE total_laps = 0';
+    this.db.run(updateLaps, (err) => {
+      if (err) {
+        console.error('Ошибка обновления кругов:', err.message);
+      } else {
+        console.log('✅ Круги обновлены на основе километров');
       }
     });
   }
@@ -99,7 +127,7 @@ class Database {
 
   getStats() {
     return new Promise((resolve, reject) => {
-      const query = 'SELECT id, total_km, updated_at FROM run_stats ORDER BY id DESC LIMIT 1';
+      const query = 'SELECT id, total_km, total_laps, updated_at FROM run_stats ORDER BY id DESC LIMIT 1';
       this.db.get(query, (err, row) => {
         if (err) {
           reject(err);
@@ -108,6 +136,7 @@ class Database {
             row || {
               id: 1,
               total_km: 0.0,
+              total_laps: 0,
               updated_at: new Date().toISOString(),
             }
           );
@@ -122,19 +151,21 @@ class Database {
         reject(new Error('Некорректное число километров'));
         return;
       }
+      const totalLaps = Math.round(km / 0.4);
       const updateSql = `
         UPDATE run_stats
         SET total_km = ?,
+            total_laps = ?,
             updated_at = CURRENT_TIMESTAMP
         WHERE id = (SELECT id FROM run_stats ORDER BY id DESC LIMIT 1)
       `;
-      this.db.run(updateSql, [km], (err) => {
+      this.db.run(updateSql, [km, totalLaps], (err) => {
         if (err) {
           reject(err);
           return;
         }
         this.getStats()
-          .then((row) => resolve({ success: true, total_km: row.total_km, updated_at: row.updated_at }))
+          .then((row) => resolve({ success: true, total_km: row.total_km, total_laps: row.total_laps, updated_at: row.updated_at }))
           .catch(reject);
       });
     });
@@ -187,6 +218,7 @@ class Database {
       const updateSql = `
         UPDATE run_stats
         SET total_km = 0.0,
+            total_laps = 0,
             updated_at = CURRENT_TIMESTAMP
         WHERE id = (SELECT id FROM run_stats ORDER BY id DESC LIMIT 1)
       `;

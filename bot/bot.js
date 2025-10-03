@@ -40,7 +40,7 @@ const adminKeyboard = {
   reply_markup: {
     inline_keyboard: [
       [
-        { text: '➕ Добавить км', callback_data: 'admin_add_km' },
+        { text: '📊 Установить км', callback_data: 'admin_add_km' },
         { text: '🔄 Сбросить данные', callback_data: 'admin_reset' }
       ],
       [
@@ -65,7 +65,7 @@ if (bot) {
         `Вы администратор бота для отслеживания марафона.\n\n` +
         `🎯 Доступные действия:\n` +
         `• Открыть Mini App для просмотра\n` +
-        `• Добавить километры\n` +
+        `• Установить километры\n` +
         `• Сбросить данные\n` +
         `• Просмотр статистики`,
         adminKeyboard
@@ -214,7 +214,7 @@ if (bot) {
 
       case 'admin_add_km':
         chatState.set(chatId, { action: 'waiting_km' });
-        bot.sendMessage(chatId, '📝 Введите количество километров для добавления (например: 5.2):');
+        bot.sendMessage(chatId, '📝 Введите общее количество километров (например: 5.2):\n\n⚠️ Это установит абсолютное значение, а не добавит к текущему!');
         bot.answerCallbackQuery(callbackQuery.id);
         break;
 
@@ -448,28 +448,30 @@ if (bot) {
       }
 
       try {
-        const statsResp = await fetch(`${SERVER_URL}/api/stats`);
-        const stats = await statsResp.json();
-        const currentKm = Number(stats.total_km || 0);
-        const newKm = currentKm + km;
-
         const resp = await fetch(`${SERVER_URL}/api/update_km`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ km: newKm })
+          body: JSON.stringify({ km: km })
         });
         const result = await resp.json();
 
         if (result.success) {
+          const totalKm = Number(result.total_km || 0);
+          const totalLaps = Math.round(totalKm / 0.4);
+          
           bot.sendMessage(
             chatId,
-            `✅ Добавлено ${km.toFixed(2)} км\n\n` +
-            `📊 Было: ${currentKm.toFixed(2)} км\n` +
-            `📊 Стало: ${newKm.toFixed(2)} км`,
-            adminKeyboard
+            `✅ Километры обновлены!\n\n` +
+            `📊 <b>Километры:</b> ${totalKm.toFixed(2)} км\n` +
+            `🔄 <b>Кругов:</b> ${totalLaps}\n\n` +
+            `Данные синхронизированы с мини-приложением!`,
+            { parse_mode: 'HTML', ...adminKeyboard }
           );
+        } else {
+          bot.sendMessage(chatId, '❌ Ошибка при обновлении километров');
         }
       } catch (error) {
+        console.error('Ошибка обновления километров:', error);
         bot.sendMessage(chatId, '❌ Ошибка сервера');
       } finally {
         chatState.delete(chatId);
