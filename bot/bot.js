@@ -314,10 +314,9 @@ if (bot) {
 
       case 'admin_reset_confirm':
         try {
-          const resp = await fetch(`${SERVER_URL}/api/data`, {
+          const resp = await fetch(`${SERVER_URL}/api/reset`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ reset: true })
+            headers: { 'Content-Type': 'application/json' }
           });
           const result = await resp.json();
           
