@@ -4,21 +4,30 @@ const VOLGOGRAD_TZ = 'Europe/Volgograd';
 console.log('🚀 Mini App загружается...');
 
 // Глобальные переменные для времени забега
-let RACE_START = new Date('2025-10-04T10:00:00+03:00'); // Время по умолчанию
-let RACE_END = new Date('2025-10-05T10:00:00+03:00'); // Время по умолчанию
+let RACE_START = new Date('2025-10-15T16:00:00+03:00'); // Обновленное время по умолчанию
+let RACE_END = new Date('2025-10-16T16:00:00+03:00'); // Обновленное время по умолчанию
 
 // Функция для получения времени забега с сервера
 async function fetchRaceTime() {
   try {
-    const response = await fetch('/.netlify/functions/set_race_time');
+    // Определяем правильный API URL в зависимости от окружения
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const apiUrl = isLocalhost ? '/api/set_race_time' : '/.netlify/functions/set_race_time';
+    
+    console.log('🔗 Запрос времени забега:', apiUrl);
+    const response = await fetch(apiUrl);
+    
     if (response.ok) {
       const raceTime = await response.json();
       RACE_START = new Date(raceTime.race_start);
       RACE_END = new Date(raceTime.race_end);
       console.log('⏰ Время забега загружено:', {
-        start: RACE_START.toLocaleString('ru-RU', { timeZone: 'Europe/Volgograd' }),
-        end: RACE_END.toLocaleString('ru-RU', { timeZone: 'Europe/Volgograd' })
+        start: RACE_START.toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' }),
+        end: RACE_END.toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })
       });
+      
+      // Обновляем заголовок с актуальной датой
+      updateRaceDateHeader();
     } else {
       console.warn('⚠️ Не удалось загрузить время забега, используется время по умолчанию');
     }
@@ -155,8 +164,38 @@ function updateRaceDate() {
 }
 
 
+// Функция для обновления заголовка с датой забега
+function updateRaceDateHeader() {
+  const raceDateEl = document.getElementById('raceDate');
+  if (raceDateEl) {
+    const startDate = RACE_START.toLocaleDateString('ru-RU', { 
+      timeZone: 'Europe/Moscow',
+      day: 'numeric',
+      month: 'long'
+    });
+    const endDate = RACE_END.toLocaleDateString('ru-RU', { 
+      timeZone: 'Europe/Moscow',
+      day: 'numeric',
+      month: 'long'
+    });
+    
+    if (startDate === endDate) {
+      raceDateEl.textContent = startDate;
+    } else {
+      raceDateEl.textContent = `${startDate} - ${endDate}`;
+    }
+    
+    console.log('📅 Заголовок обновлен:', raceDateEl.textContent);
+  }
+}
+
 async function fetchStats() {
-  const res = await fetch('/.netlify/functions/data');
+  // Определяем правильный API URL в зависимости от окружения
+  const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  const apiUrl = isLocalhost ? '/api/data' : '/.netlify/functions/data';
+  
+  console.log('🔗 Запрос статистики:', apiUrl);
+  const res = await fetch(apiUrl);
   if (!res.ok) throw new Error('Failed to fetch stats');
   return res.json();
 }
