@@ -1,39 +1,47 @@
 // Единая функция для работы с данными
-const fs = require('fs').promises;
-const path = require('path');
+// Используем Netlify Blobs для постоянного хранения данных
+const { getStore } = require('@netlify/blobs');
 
-const DATA_FILE = '/tmp/run_stats.json';
-
-let cache = null;
-let lastModified = null;
+const STORE_NAME = 'marathon-data';
+const DATA_KEY = 'run_stats';
 
 async function getStats() {
   try {
-    // Проверяем кеш
-    if (cache && lastModified) {
-      const stats = await fs.stat(DATA_FILE).catch(() => null);
-      if (stats && stats.mtime.getTime() === lastModified) {
-        return cache;
+    const store = getStore({
+      name: STORE_NAME,
+      siteID: process.env.NETLIFY_SITE_ID,
+      token: process.env.NETLIFY_ACCESS_TOKEN
+    });
+    
+    // Пытаемся получить данные из Blob store
+    const data = await store.get(DATA_KEY);
+    
+    if (data) {
+      const stats = JSON.parse(data);
+      
+      // Убеждаемся что total_laps есть
+      if (stats.total_laps === undefined) {
+        stats.total_laps = Math.round(stats.total_km / 0.4);
       }
+      
+      return stats;
+    } else {
+      // Если данных нет, возвращаем данные по умолчанию
+      const defaultStats = {
+        id: 1,
+        total_km: 0.0,
+        total_laps: 0,
+        updated_at: new Date().toISOString()
+      };
+      
+      // Сохраняем данные по умолчанию
+      await saveStats(defaultStats);
+      return defaultStats;
     }
-    
-    // Читаем из файла
-    const data = await fs.readFile(DATA_FILE, 'utf8');
-    const stats = JSON.parse(data);
-    
-    // Убеждаемся что total_laps есть
-    if (stats.total_laps === undefined) {
-      stats.total_laps = Math.round(stats.total_km / 0.4);
-    }
-    
-    // Обновляем кеш
-    cache = stats;
-    const fileStats = await fs.stat(DATA_FILE);
-    lastModified = fileStats.mtime.getTime();
-    
-    return stats;
   } catch (error) {
-    // Если файл не существует, возвращаем данные по умолчанию
+    console.error('Ошибка получения данных из Blob store:', error);
+    
+    // Fallback: возвращаем данные по умолчанию
     const defaultStats = {
       id: 1,
       total_km: 0.0,
@@ -41,24 +49,22 @@ async function getStats() {
       updated_at: new Date().toISOString()
     };
     
-    // Создаем файл с данными по умолчанию
-    await saveStats(defaultStats);
     return defaultStats;
   }
 }
 
 async function saveStats(stats) {
   try {
-    await fs.writeFile(DATA_FILE, JSON.stringify(stats, null, 2));
+    const store = getStore({
+      name: STORE_NAME,
+      siteID: process.env.NETLIFY_SITE_ID,
+      token: process.env.NETLIFY_ACCESS_TOKEN
+    });
     
-    // Обновляем кеш
-    cache = stats;
-    const fileStats = await fs.stat(DATA_FILE);
-    lastModified = fileStats.mtime.getTime();
-    
+    await store.set(DATA_KEY, JSON.stringify(stats, null, 2));
     return true;
   } catch (error) {
-    console.error('Ошибка сохранения данных:', error);
+    console.error('Ошибка сохранения данных в Blob store:', error);
     return false;
   }
 }

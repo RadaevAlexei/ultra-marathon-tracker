@@ -1,24 +1,22 @@
 // Используем ту же систему хранения, что и в data.js
-const fs = require('fs').promises;
-const path = require('path');
+// Используем Netlify Blobs для постоянного хранения данных
+const { getStore } = require('@netlify/blobs');
 
-const DATA_FILE = '/tmp/run_stats.json';
-
-let cache = null;
-let lastModified = null;
+const STORE_NAME = 'marathon-data';
+const DATA_KEY = 'run_stats';
 
 async function saveStats(stats) {
   try {
-    await fs.writeFile(DATA_FILE, JSON.stringify(stats, null, 2));
+    const store = getStore({
+      name: STORE_NAME,
+      siteID: process.env.NETLIFY_SITE_ID,
+      token: process.env.NETLIFY_ACCESS_TOKEN
+    });
     
-    // Обновляем кеш
-    cache = stats;
-    const fileStats = await fs.stat(DATA_FILE);
-    lastModified = fileStats.mtime.getTime();
-    
+    await store.set(DATA_KEY, JSON.stringify(stats, null, 2));
     return true;
   } catch (error) {
-    console.error('Ошибка сохранения данных:', error);
+    console.error('Ошибка сохранения данных в Blob store:', error);
     return false;
   }
 }

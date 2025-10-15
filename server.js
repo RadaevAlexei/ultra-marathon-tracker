@@ -32,6 +32,44 @@ app.get('/api/stats', async (req, res) => {
   }
 });
 
+// Endpoint для получения данных (используется ботом)
+app.get('/api/data', async (req, res) => {
+  try {
+    const stats = await database.getStats();
+    res.json({ 
+      total_km: stats.total_km, 
+      total_laps: stats.total_laps,
+      updated_at: stats.updated_at 
+    });
+  } catch (error) {
+    console.error('Ошибка получения данных:', error);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
+// Endpoint для обновления данных (используется ботом)
+app.post('/api/data', async (req, res) => {
+  try {
+    const { kmNumber, reset } = req.body;
+    
+    if (reset) {
+      const result = await database.resetStats();
+      res.json(result);
+    } else if (kmNumber !== undefined) {
+      if (isNaN(kmNumber)) {
+        return res.status(400).json({ error: 'Некорректные данные' });
+      }
+      const result = await database.updateKm(Number(kmNumber));
+      res.json(result);
+    } else {
+      return res.status(400).json({ error: 'Необходимо указать kmNumber или reset' });
+    }
+  } catch (error) {
+    console.error('Ошибка обновления данных:', error);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
 app.post('/api/update_km', async (req, res) => {
   try {
     const { km } = req.body;

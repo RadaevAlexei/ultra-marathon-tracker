@@ -1,33 +1,61 @@
 // Функция для установки времени забега
-const fs = require('fs').promises;
-const path = require('path');
+// Используем Netlify Blobs для постоянного хранения данных
+const { getStore } = require('@netlify/blobs');
 
-const RACE_TIME_FILE = '/tmp/race_time.json';
+const STORE_NAME = 'marathon-data';
+const RACE_TIME_KEY = 'race_time';
 
 async function getRaceTime() {
   try {
-    const data = await fs.readFile(RACE_TIME_FILE, 'utf8');
-    return JSON.parse(data);
+    const store = getStore({
+      name: STORE_NAME,
+      siteID: process.env.NETLIFY_SITE_ID,
+      token: process.env.NETLIFY_ACCESS_TOKEN
+    });
+    
+    // Пытаемся получить данные из Blob store
+    const data = await store.get(RACE_TIME_KEY);
+    
+    if (data) {
+      return JSON.parse(data);
+    } else {
+      // Если данных нет, возвращаем время по умолчанию
+      const defaultTime = {
+        race_start: '2025-10-04T10:00:00+03:00',
+        race_end: '2025-10-05T10:00:00+03:00',
+        updated_at: new Date().toISOString()
+      };
+      
+      // Сохраняем время по умолчанию
+      await saveRaceTime(defaultTime);
+      return defaultTime;
+    }
   } catch (error) {
-    // Если файл не существует, возвращаем время по умолчанию
+    console.error('Ошибка получения времени забега из Blob store:', error);
+    
+    // Fallback: возвращаем время по умолчанию
     const defaultTime = {
       race_start: '2025-10-04T10:00:00+03:00',
       race_end: '2025-10-05T10:00:00+03:00',
       updated_at: new Date().toISOString()
     };
     
-    // Создаем файл с временем по умолчанию
-    await saveRaceTime(defaultTime);
     return defaultTime;
   }
 }
 
 async function saveRaceTime(raceTime) {
   try {
-    await fs.writeFile(RACE_TIME_FILE, JSON.stringify(raceTime, null, 2));
+    const store = getStore({
+      name: STORE_NAME,
+      siteID: process.env.NETLIFY_SITE_ID,
+      token: process.env.NETLIFY_ACCESS_TOKEN
+    });
+    
+    await store.set(RACE_TIME_KEY, JSON.stringify(raceTime, null, 2));
     return true;
   } catch (error) {
-    console.error('Ошибка сохранения времени забега:', error);
+    console.error('Ошибка сохранения времени забега в Blob store:', error);
     return false;
   }
 }
